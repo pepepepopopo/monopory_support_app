@@ -1,0 +1,35 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: db
+  username: user
+  password: password
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+
+development:
+  <<: *default
+  database: monopory_support_app_development
+
+test:
+  <<: *default
+  database: monopory_support_app_test
+
+production:
+  primary: &primary_production
+    <<: *default
+    database: monopory_support_app_production
+    username: monopory_support_app
+    password: <%= ENV["MONOPORY_SUPPORT_APP_DATABASE_PASSWORD"] %>
+  cache:
+    <<: *primary_production
+    database: monopory_support_app_production_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_production
+    database: monopory_support_app_production_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_production
+    database: monopory_support_app_production_cable
+    migrations_paths: db/cable_migrate
