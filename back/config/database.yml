@@ -18,6 +18,7 @@ test:
 production:
   primary: &primary_production
     <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
     database: monopory_support_app_production
     username: monopory_support_app
     password: <%= ENV["MONOPORY_SUPPORT_APP_DATABASE_PASSWORD"] %>
