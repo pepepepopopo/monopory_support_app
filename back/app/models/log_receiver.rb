@@ -1,0 +1,2 @@
+class LogReceiver < ApplicationRecord
+end
