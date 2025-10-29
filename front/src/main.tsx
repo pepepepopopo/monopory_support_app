@@ -6,6 +6,7 @@ import { routes } from "./routes";
 import './index.css'
 
 const router = createBrowserRouter(routes);
+console.log(router.routes);
 
 const root = document.getElementById("root") as HTMLElement;
 
