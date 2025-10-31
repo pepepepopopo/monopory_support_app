@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import { Link } from "react-router";
+import PlayerColor from '../../utils/PlayerColor';
 
-const PLAYER_COLORS = [
-  '#ff0000', '#ffa500', '#ffff00', '#008000',
-  '#00ffff', '#0000ff', '#800080', '#ff00ff'
-];
-
-function NewGame() {
-  const [selectedColor, setSelectedColor] = useState(PLAYER_COLORS[0]);
+const NewGame = () => {
+  const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   return(
     <div className="min-h-screen p-6">
       <div className="max-w-2xl mx-auto">
@@ -37,7 +33,7 @@ function NewGame() {
               <fieldset className="fieldset">
                 <legend className="fieldset-legend">カラー選択</legend>
                 <div className="grid grid-cols-4 gap-3">
-                  { PLAYER_COLORS.map(color =>{
+                  { PlayerColor.map(color =>{
                     const isSelected = selectedColor === color;
                     return(
                       <button className={`w-full aspect-square rounded-lg transition-all ${
