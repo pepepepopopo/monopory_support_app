@@ -10,8 +10,7 @@ function Home() {
     setIsModalOpen((isModalOpen) => !isModalOpen)
   }
 
-  const dialogElement = document.getElementById("my_modal_1") as HTMLDialogElement | null
-dialogElement?.showModal()
+  const dialogElement = document.getElementById("my_modal_1") as HTMLDialogElement | null;
 
   return (
     <>
@@ -29,7 +28,7 @@ dialogElement?.showModal()
           ゲームに参加
         </button>
         {/* Open the modal using document.getElementById('ID').showModal() method */}
-        <button className="btn" onClick={()=>dialogElement}>open modal</button>
+        <button className="btn" onClick={()=>dialogElement?.showModal()}>open modal</button>
         <dialog id="my_modal_1" className="modal">
           <div className="modal-box">
             <h3 className="font-bold text-lg">Hello!</h3>
