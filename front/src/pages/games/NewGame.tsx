@@ -15,6 +15,8 @@ const NewGame = () => {
             <div className="leading-none">新しいゲームを作成</div>
             <div>ゲームの新しいセッションを開始します</div>
           </div>
+          <form>
+          </form>
             <div className="space-y-2">
               <div className="divider"></div>
               <div className="flex items-center gap-2 text-muted-foreground">
