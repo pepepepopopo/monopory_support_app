@@ -8,7 +8,10 @@ const CreateGame = async() => {
       },
       body: JSON.stringify({game: { start_money: 15000}})
     });
-    return response;
+    if (!response.ok) {
+      throw new Error(`ゲーム作成失敗: ${response.status}`);
+    }
+    return response.json();
   }catch(error) {
     console.error("ゲーム作成エラー", error)
   }
