@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from "react-router";
+import CreateGame from '../../services/api/games/createGame';
 import PlayerColor from '../../utils/PlayerColor';
 
 const NewGame = () => {
@@ -34,7 +35,10 @@ const NewGame = () => {
                   { PlayerColor.map(color =>{
                     const isSelected = selectedColor === color;
                     return(
-                      <button className={`w-full aspect-square rounded-lg transition-all ${
+                      <button
+                        key={color}
+                        type='button'
+                        className={`w-full aspect-square rounded-lg transition-all ${
                           isSelected
                             ? 'ring-2 ring-offset-2 scale-110'
                             : 'hover:scale-105 ring-2 ring-border ring-base-200'
@@ -47,7 +51,9 @@ const NewGame = () => {
                 </div>
               </fieldset>
             </div>
-            <button className="btn btn-block btn-primary">ゲームを作成</button>
+            <button
+              onClick={() => CreateGame()}
+              className="btn btn-block btn-primary">ゲームを作成</button>
         </div>
       </div>
     </div>
