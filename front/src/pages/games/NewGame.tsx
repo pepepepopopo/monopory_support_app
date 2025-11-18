@@ -10,7 +10,7 @@ const NewGame = () => {
   const handleCreateGame = async () => {
     const data = await CreateGame();
     if (data?.game?.id) {
-      navigate(`/games/${data.game.id}/startSetting`);
+      navigate(`/games/${data.game.join_token}/startSetting`);
     }
   };
 
@@ -22,7 +22,6 @@ const NewGame = () => {
       <div className="flex flex-col gap-6 rounded-xl border glass px-6 [&:last-child]:pb-6">
         <div className="grid auto-rows-min gap-1.5 pt-6 ">
           <div className="leading-none">新しいゲームを作成</div>
-          <div>ゲームの新しいセッションを開始します</div>
         </div>
         <div className="space-y-2">
           <div className="divider"></div>

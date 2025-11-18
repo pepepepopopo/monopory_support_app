@@ -5,7 +5,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     volumes:
-      - /var/lib/postgresql/18/docker
+      - db:/var/lib/postgresql/data
     ports:
       - '5432:5432'
   selenium_chrome:
