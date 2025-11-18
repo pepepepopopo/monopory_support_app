@@ -1,6 +1,9 @@
 import { Link } from "react-router";
+import { useParams } from "react-router";
+import CopyToClipboard from "../../components/button/CopyToClipboard";
 
 const StartSettingGame = () => {
+  const { join_token } = useParams();
   return(
     <>
       <Link to="/games" className="btn mb-3">
@@ -12,13 +15,21 @@ const StartSettingGame = () => {
         </div>
         <div className="space-y-2">
           <fieldset className="fieldset">
-            <legend className="fieldset-legend">ゲームID</legend>
-            <input type="text" className="input input-primary" placeholder="名前を入力" />
+            <legend className="fieldset-legend">参加コード</legend>
+            <div className="input-group flex">
+              <input
+                type="text"
+                value={join_token || ""}
+                readOnly
+                className="input input-bordered"
+              />
+              <CopyToClipboard text = {join_token ?? ""} />
+            </div>
           </fieldset>
         </div>
         <button
           type="button"
-          className="btn btn-block btn-primary">ゲームを作成</button>
+          className="btn btn-block btn-primary">ゲームを開始</button>
       </div>
     </>
   )

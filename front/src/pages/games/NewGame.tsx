@@ -10,7 +10,7 @@ const NewGame = () => {
   const handleCreateGame = async () => {
     const data = await CreateGame();
     if (data?.game?.id) {
-      navigate(`/games/${data.game.id}/startSetting`);
+      navigate(`/games/${data.game.join_token}/startSetting`);
     }
   };
 

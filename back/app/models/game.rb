@@ -2,13 +2,12 @@ class Game < ApplicationRecord
   has_many :players, dependent: :destroy
   has_many :logs, dependent: :destroy
 
-  enum status: {
+  enum :status,
     waiting: 0,
     playing: 1,
     finished: 2
-  }
 
-  before_create :generate_join_token
+  before_validation :generate_join_token
 
   validates :join_token, uniqueness: true, presence: true
 

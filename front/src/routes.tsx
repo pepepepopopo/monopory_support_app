@@ -3,6 +3,7 @@ import Home from './pages/Home.tsx'
 import NewGameLayout from './pages/games/NewGameLayout.tsx';
 import NewGame from './pages/games/NewGame.tsx';
 import StartSettingGame from './pages/games/StartSettingGame.tsx';
+import GameJoin from './pages/games/GameJoin.tsx';
 
 export const routes = [
   {
@@ -13,7 +14,8 @@ export const routes = [
       { path: "games", Component: NewGameLayout,
         children: [
           { index: true, Component: NewGame },
-          { path: ":gameId/startSetting", Component: StartSettingGame }
+          { path: ":join_token/startSetting", Component: StartSettingGame },
+          { path: ":join_token/join", component: GameJoin},
         ]
       },
     ],

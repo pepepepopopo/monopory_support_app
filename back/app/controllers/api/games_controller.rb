@@ -1,6 +1,11 @@
 class Api::GamesController < ApplicationController
+  before_action :set_game, only: [:show]
   def index
     render json: { status: 200, games: Game.all }
+  end
+
+  def show
+    render json: { game: @game}
   end
 
   def create
@@ -23,7 +28,11 @@ class Api::GamesController < ApplicationController
   end
 
   private
+  def set_game
+    @game = Game.find_by!(join_token: params[:join_token])
+  end
+
   def game_params
-    params.require(:game).permit(:start_money)
+    params.require(:game).permit(:start_money, :join_token)
   end
 end
