@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import CreateGame from '../../services/api/games/createGame';
-import PlayerColor from '../../utils/PlayerColor';
+import PlayerColor from "../../utils/PlayerColor";
 
 const NewGame = () => {
+  const [ isHost, setIsHost ] = useState(true);
+  const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   const navigate = useNavigate();
 
@@ -13,6 +15,10 @@ const NewGame = () => {
       navigate(`/games/${data.game.join_token}/startSetting`);
     }
   };
+
+  const handleCreatePlayer = () => {
+    
+  }
 
   return(
     <>
