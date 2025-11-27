@@ -4,9 +4,9 @@ const CreatePlayer = async(name:string, color:string, is_host:boolean) => {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        "Content-type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({player: {name: name, color:color, is_host: is_host}})
+      body: JSON.stringify({player: {name: name, color:color, is_host: is_host, money:0}})
     });
     if(!response.ok){
       throw new Error(`ユーザー作成失敗: ${response.status}`);
