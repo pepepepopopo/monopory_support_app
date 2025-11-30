@@ -1,11 +1,37 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
+import CreatePlayer from "../../services/api/player/createPlayer";
+import JoinGame from "../../services/api/games/JoinGame";
 import PlayerColor from "../../utils/PlayerColor";
 
 const GameJoin = () =>{
-  const [ isHost, setIsHost ] = useState(true);
+  const [ isHost, setIsHost ] = useState(false);
   const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
+  const [ isLoading, setIsLoading ] = useState(false);
+  const { joinToken } = useParams<{ joinToken: string }>();
+  const navigate = useNavigate();
+
+  const handleStartGame = async() => {
+    if (isLoading) return;
+    try{
+      if (name.trim() === "") {
+        alert("プレイヤー名を入力してください")
+        return
+      };
+      setIsLoading(true);
+      const token = joinToken ?? "";
+      const data = await JoinGame(token);
+      const gameId = data.game.id
+      await CreatePlayer(gameId, name, selectedColor, isHost);
+      navigate(`/games/${data.game.join_token}/startSetting`);
+    }catch(error){
+      alert(`ゲームに参加できませんでした\nゲームが開始されていないことを確認してください`)
+      console.error(error)
+    }finally{
+      setIsLoading(false);
+    }
+  }
 
   return(
     <>
@@ -23,7 +49,7 @@ const GameJoin = () =>{
           </div>
           <fieldset className="fieldset">
             <legend className="fieldset-legend">プレイヤー名</legend>
-            <input type="text" className="input input-primary" placeholder="名前を入力" />
+            <input type="text" onChange={(e) => setName(e.target.value)} className="input input-primary" placeholder="名前を入力" />
           </fieldset>
         </div>
         <div className="space-y-2">
@@ -51,7 +77,8 @@ const GameJoin = () =>{
         </div>
         <button
           type="button"
-          className="btn btn-block btn-primary">ゲームに参加</button>
+          onClick={() => handleStartGame()}
+          className="btn btn-block btn-primary">{isLoading ? "参加中...":"ゲームに参加"}</button>
       </div>
     </>
   )

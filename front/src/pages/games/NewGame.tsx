@@ -2,22 +2,32 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import CreateGame from '../../services/api/games/createGame';
 import PlayerColor from "../../utils/PlayerColor";
+import CreatePlayer from "../../services/api/player/createPlayer";
 
 const NewGame = () => {
   const [ isHost, setIsHost ] = useState(true);
   const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
+  const [ isLoading, setIsLoading ] = useState(false);
   const navigate = useNavigate();
 
-  const handleCreateGame = async () => {
-    const data = await CreateGame();
-    if (data?.game?.id) {
+  const handleStartGame = async() => {
+    if (isLoading) return;
+    try{
+      if (name.trim() === "") {
+        alert("プレイヤー名を入力してください")
+        return
+      };
+      setIsLoading(true);
+      const data = await CreateGame();
+      const gameId = data.game.id
+      await CreatePlayer(gameId, name, selectedColor, isHost);
       navigate(`/games/${data.game.join_token}/startSetting`);
+    }catch{
+      console.error("ゲームを開始できませんでした")
+    }finally{
+      setIsLoading(false);
     }
-  };
-
-  const handleCreatePlayer = () => {
-    
   }
 
   return(
@@ -36,7 +46,7 @@ const NewGame = () => {
           </div>
           <fieldset className="fieldset">
             <legend className="fieldset-legend">プレイヤー名</legend>
-            <input type="text" className="input input-primary" placeholder="名前を入力" />
+            <input type="text" onChange={(e) => setName(e.target.value)} className="input input-primary" placeholder="名前を入力" />
           </fieldset>
         </div>
         <div className="space-y-2">
@@ -64,8 +74,8 @@ const NewGame = () => {
         </div>
         <button
           type="button"
-          onClick={handleCreateGame}
-          className="btn btn-block btn-primary">ゲームを作成</button>
+          onClick={() => handleStartGame()}
+          className="btn btn-block btn-primary">{isLoading ? "作成中...":"ゲームを作成"}</button>
       </div>
     </>
   );
