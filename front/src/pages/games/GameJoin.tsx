@@ -19,9 +19,12 @@ const GameJoin = () =>{
         alert("プレイヤー名を入力してください")
         return
       };
+      if (!joinToken) {
+        alert("ゲーム情報が取得できませんでした");
+        return;
+      }
       setIsLoading(true);
-      const token = joinToken ?? "";
-      const data = await JoinGame(token);
+      const data = await JoinGame(joinToken);
       const gameId = data.game.id
       await CreatePlayer(gameId, name, selectedColor, isHost);
       navigate(`/games/${data.game.join_token}/startSetting`);
