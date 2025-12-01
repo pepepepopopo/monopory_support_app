@@ -14,8 +14,8 @@ export const routes = [
       { path: "games", Component: NewGameLayout,
         children: [
           { index: true, Component: NewGame },
-          { path: ":join_token/startSetting", Component: StartSettingGame },
-          { path: ":join_token/join", Component: GameJoin}
+          { path: ":joinToken/startSetting", Component: StartSettingGame },
+          { path: ":joinToken/join", Component: GameJoin}
         ]
       },
     ],

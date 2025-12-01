@@ -1,10 +1,10 @@
 class Api::PlayersController < ApplicationController
   def index
-    render json: { status: 200, users: User.all }
+    render json: { status: 200, players: player.all }
   end
 
   def create
-    player = User.new(player_params)
+    player = Player.new(player_params)
     if player.save
       render json: { status:200, player: player }
     else
@@ -13,7 +13,7 @@ class Api::PlayersController < ApplicationController
   end
 
   def destroy
-    player = User.find(params[:id])
+    player = Player.find(params[:id])
     if player.destroy
       render json: { status:200, player:player }
     else
@@ -23,6 +23,6 @@ class Api::PlayersController < ApplicationController
 
   private
   def player_params
-    params = require(:player).permit(:name, :color, :is_host, :money)
+    params.require(:player).permit(:game_id, :name, :color, :is_host, :money)
   end
 end
