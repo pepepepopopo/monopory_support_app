@@ -5,7 +5,7 @@ import PlayerColor from "../../utils/PlayerColor";
 import CreatePlayer from "../../services/api/player/createPlayer";
 
 const NewGame = () => {
-  const [ isHost, setIsHost ] = useState(true);
+  const [ isHost, _setIsHost ] = useState(true);
   const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   const [ isLoading, setIsLoading ] = useState(false);

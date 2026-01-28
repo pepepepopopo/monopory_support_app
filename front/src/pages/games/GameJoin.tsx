@@ -5,7 +5,7 @@ import JoinGame from "../../services/api/games/JoinGame";
 import PlayerColor from "../../utils/PlayerColor";
 
 const GameJoin = () =>{
-  const [ isHost, setIsHost ] = useState(false);
+  const [ isHost, _setIsHost ] = useState(false);
   const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   const [ isLoading, setIsLoading ] = useState(false);
