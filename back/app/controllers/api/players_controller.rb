@@ -1,14 +1,25 @@
 class Api::PlayersController < ApplicationController
   def index
-    render json: { status: 200, players: player.all }
+    game = Game.find_by(join_token: params[:game_join_token])
+    render json: game.players
   end
 
   def create
-    player = Player.new(player_params)
-    if player.save
-      render json: { status:200, player: player }
+    @player = Player.new(player_params)
+
+    if @player.save
+      # 保存したプレイヤーに紐づくゲームを取得
+      game = @player.game
+
+      # そのゲームのチャンネルに対してブロードキャスト
+      GameChannel.broadcast_to(game, {
+        type: "PLAYER_ADDED",
+        all_players: game.players
+      })
+
+      render json: @player, status: :created
     else
-      render json: { status:500, message:"プレイヤー作成に失敗しました"}
+      render json: @player.errors, status: :unprocessable_entity
     end
   end
 

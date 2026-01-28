@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rails/actioncable": "^8.1.200",
     "@tailwindcss/vite": "^4.1.16",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/node": "^24.6.0",
+    "@types/rails__actioncable": "^8.0.3",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
