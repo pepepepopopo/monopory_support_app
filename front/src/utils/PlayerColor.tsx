@@ -3,4 +3,4 @@ const PlayerColor = [
   '#00ffff', '#0000ff', '#800080', '#ff00ff'
 ];
 
-export default PlayerColor
+export default PlayerColor;

@@ -1,9 +1,43 @@
-import { Link } from "react-router";
-import { useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router";
 import CopyToClipboard from "../../components/button/CopyToClipboard";
+import GameConsumer from "../../utils/ctionCable";
+import type { GameEvent, Player } from "../../types/game";
 
 const StartSettingGame = () => {
-  const { joinToken } = useParams();
+  const { joinToken } = useParams<{ joinToken: string }>();
+  const [players, setPlayers] = useState<Player[]>([]);
+
+  useEffect(()=> {
+    if (!joinToken) return;
+
+    const fetchInitialPlayers = async () => {
+      try {
+        // joinTokenを使って、そのゲームのプレイヤー一覧を返すAPIを叩く
+        const response = await fetch(`http://localhost:3000/api/games/${joinToken}/players`);
+        const data = await response.json();
+        setPlayers(data); // 最初に今のメンバーをセット！
+      } catch (error) {
+        console.error("プレイヤーの取得に失敗しました", error);
+      }
+    };
+
+    fetchInitialPlayers();
+
+    const subscription = GameConsumer.subscriptions.create(
+      { channel: "GameChannel", game_id:joinToken },
+      {
+        received(data: GameEvent){
+          if(data.type === "PLAYER_ADDED" ){
+            setPlayers(data.all_players);
+          }
+        },
+      }
+    );
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [joinToken]);
   return(
     <>
       <Link to="/games" className="btn mb-3">
@@ -28,19 +62,25 @@ const StartSettingGame = () => {
           </fieldset>
           <ul className="list bg-base-100 rounded-box shadow-md">
 
-            <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">プレイヤーリスト</li>
-
-            <li className="list-row">
-              <div className="text-4xl font-thin opacity-30 tabular-nums">color</div>
-              <div><img className="size-10 rounded-box" src="https://img.daisyui.com/images/profile/demo/1@94.webp"/></div>
-              <div className="list-col-grow">
-                <div>name</div>
-                <div className="text-xs uppercase font-semibold opacity-60">role</div>
-              </div>
-              <button className="btn btn-square btn-ghost">
-                <svg className="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" fill="none" stroke="currentColor"><path d="M6 3L20 12 6 21 6 3z"></path></g></svg>
-              </button>
+            <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">
+              プレイヤーリスト（{players.length}名）
             </li>
+
+            {players.length === 0 ? (
+              <li className="p-4 text-center opacity-50">参加者を待っています...</li>
+            ) : (
+              players.map((player)=> (
+                <li key={player.id} className="list-row items-center">
+                  <div className="size-10 rounded-full shadow-sm" style={{ backgroundColor: player.color }} />
+                  <div className="list-col-grow">
+                    <div className="font-bold">{player.name}</div>
+                    <div className="text-xs uppercase font-semibold opacity-60">
+                      {player.is_host ? "👑 ホスト" : "プレイヤー"}
+                    </div>
+                  </div>
+                </li>
+              ))
+            )}
           </ul>
         </div>
         <button
