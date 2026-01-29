@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from "react-router";
 import CreatePlayer from "../../services/api/player/createPlayer";
 import JoinGame from "../../services/api/games/JoinGame";
 import PlayerColor from "../../utils/PlayerColor";
+import type { Player } from "../../types/game";
+
 
 const GameJoin = () =>{
   const [ isHost, _setIsHost ] = useState(false);
@@ -10,7 +12,22 @@ const GameJoin = () =>{
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   const [ isLoading, setIsLoading ] = useState(false);
   const { joinToken } = useParams<{ joinToken: string }>();
+  const [players, setPlayers] = useState<Player[]>([]);
+  const hostPlayer = players.find(p => p.is_host);
   const navigate = useNavigate();
+
+  const fetchInitialPlayers = async () => {
+    try {
+      // joinTokenを使って、そのゲームのプレイヤー一覧を返すAPIを叩く
+      const response = await fetch(`http://localhost:3000/api/games/${joinToken}/players`);
+      const data = await response.json();
+      setPlayers(data); // 最初に今のメンバーをセット！
+    } catch (error) {
+      console.error("プレイヤーの取得に失敗しました", error);
+    }
+  };
+
+  fetchInitialPlayers();
 
   const handleStartGame = async() => {
     if (isLoading) return;
@@ -44,6 +61,7 @@ const GameJoin = () =>{
       <div className="flex flex-col gap-6 rounded-xl border glass px-6 [&:last-child]:pb-6">
         <div className="grid auto-rows-min gap-1.5 pt-6 ">
           <div className="leading-none">ゲームに参加</div>
+          <div className="leading-none">{hostPlayer ? `${hostPlayer.name}のゲーム` : "読み込み中.."}</div>
         </div>
         <div className="space-y-2">
           <div className="divider"></div>
