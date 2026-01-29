@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import CopyToClipboard from "../../components/button/CopyToClipboard";
-import GameConsumer from "../../utils/ctionCable";
+import QrCodeModal from "../../components/Modal/QrCodeModal";
+import GameConsumer from "../../utils/actionCable";
 import type { GameEvent, Player } from "../../types/game";
 
 const StartSettingGame = () => {
@@ -50,7 +51,7 @@ const StartSettingGame = () => {
         <div className="space-y-2">
           <fieldset className="fieldset">
             <legend className="fieldset-legend">参加コード</legend>
-            <div className="input-group flex">
+            <div className="input-group flex gap-2">
               <input
                 type="text"
                 value={joinToken || ""}
@@ -58,6 +59,7 @@ const StartSettingGame = () => {
                 className="input input-bordered"
               />
               <CopyToClipboard text = {joinToken ?? ""} />
+              <QrCodeModal joinUrl= {`${window.location.origin}/games/${joinToken}/join`}/>
             </div>
           </fieldset>
           <ul className="list bg-base-100 rounded-box shadow-md">
