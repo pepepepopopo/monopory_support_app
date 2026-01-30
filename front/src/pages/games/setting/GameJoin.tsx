@@ -47,8 +47,8 @@ const GameJoin = () =>{
       const data = await JoinGame(joinToken);
       const gameId = data.game.id
       const playerData = await CreatePlayer(gameId, name, selectedColor, isHost);
-      localStorage.setItem("playerId", playerData.id.string());
-      localStorage.setItem("isHost", "false")
+      sessionStorage.setItem("playerId", playerData.id.toString());
+      sessionStorage.setItem("isHost", "false")
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch(error){
       alert(`ゲームに参加できませんでした\nゲームが開始されていないことを確認してください`)

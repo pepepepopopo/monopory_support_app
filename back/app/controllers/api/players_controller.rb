@@ -12,9 +12,10 @@ class Api::PlayersController < ApplicationController
       game = @player.game
 
       # そのゲームのチャンネルに対してブロードキャスト
+      Rails.logger.info "🔔 PLAYER_ADDED イベント送信: game_id=#{game.id}, players=#{game.players.count}名"
       GameChannel.broadcast_to(game, {
         type: "PLAYER_ADDED",
-        all_players: game.players
+        all_players: game.players.as_json
       })
 
       render json: @player, status: :created
@@ -27,14 +28,17 @@ class Api::PlayersController < ApplicationController
     player = Player.find(params[:id])
     game = player.game
 
+    Rails.logger.info "🗑️ プレイヤー削除リクエスト: player_id=#{player.id}, name=#{player.name}, is_host=#{player.is_host}"
+
     if player.is_host
       # ホストが退出する場合: ゲームごと削除
+      # ActionCableで全員に通知（削除前に実行）
+      GameChannel.broadcast_to(game, {
+        type: "GAME_DELETED",
+        message: "ホストが退出したため、ゲームが終了しました"
+      })
+
       if game.destroy
-        # ActionCableで全員に通知
-        GameChannel.broadcast_to(game, {
-          type: "GAME_DELETED",
-          message: "ホストが退出したため、ゲームが終了しました"
-        })
         render json: { status: 200, message: "ゲームを削除しました" }
       else
         render json: { status: 500, message: "ゲーム削除に失敗しました" }
@@ -45,7 +49,7 @@ class Api::PlayersController < ApplicationController
         # 残りのメンバーに更新を通知
         GameChannel.broadcast_to(game, {
           type: "PLAYER_REMOVED",
-          all_players: game.players
+          all_players: game.players.as_json
         })
         render json: { status: 200, message: "プレイヤーを削除しました" }
       else

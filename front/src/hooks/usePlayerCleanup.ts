@@ -20,11 +20,19 @@ const usePlayerCleanup = () => {
     // 既にクリーンアップ済みの場合はスキップ
     if (hasCleanedUp.current) return;
 
-    const playerId = localStorage.getItem("playerId");
-    if (!playerId) return;
+    const playerId = sessionStorage.getItem("playerId");
+    const isHost = sessionStorage.getItem("isHost");
+
+    console.log("🧹 クリーンアップ実行:", { playerId, isHost });
+
+    if (!playerId) {
+      console.warn("⚠️ playerIdがsessionStorageに存在しません");
+      return;
+    }
 
     try {
       // プレイヤー削除APIを呼び出す
+      console.log(`🗑️ DELETE /api/players/${playerId} を実行中...`);
       const response = await fetch(`http://localhost:3000/api/players/${playerId}`, {
         method: "DELETE",
         headers: {
@@ -36,9 +44,9 @@ const usePlayerCleanup = () => {
         // クリーンアップ完了フラグを立てる
         hasCleanedUp.current = true;
 
-        // localStorageをクリア
-        localStorage.removeItem("playerId");
-        localStorage.removeItem("isHost");
+        // sessionStorageをクリア
+        sessionStorage.removeItem("playerId");
+        sessionStorage.removeItem("isHost");
 
         console.log("プレイヤー削除が完了しました");
       }
@@ -50,16 +58,16 @@ const usePlayerCleanup = () => {
   useEffect(() => {
     // ブラウザを閉じる時のハンドラー
     const handleBeforeUnload = () => {
-      const playerId = localStorage.getItem("playerId");
+      const playerId = sessionStorage.getItem("playerId");
       if (playerId && !hasCleanedUp.current) {
         // 同期的に送信するためにnavigator.sendBeaconを使用
         // （fetchは非同期なのでブラウザが閉じる前に完了しない可能性がある）
         const blob = new Blob([JSON.stringify({})], { type: "application/json" });
         navigator.sendBeacon(`http://localhost:3000/api/players/${playerId}`, blob);
 
-        // localStorageをクリア
-        localStorage.removeItem("playerId");
-        localStorage.removeItem("isHost");
+        // sessionStorageをクリア
+        sessionStorage.removeItem("playerId");
+        sessionStorage.removeItem("isHost");
         hasCleanedUp.current = true;
       }
     };

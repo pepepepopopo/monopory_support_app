@@ -13,6 +13,11 @@ const StartSettingGame = () => {
   const { cleanupPlayer } = usePlayerCleanup();
 
   useEffect(()=> {
+    console.log("🎮 StartSettingGameマウント時のsessionStorage:", {
+      playerId: sessionStorage.getItem("playerId"),
+      isHost: sessionStorage.getItem("isHost")
+    });
+
     if (!joinToken) return;
 
     const fetchInitialPlayers = async () => {
@@ -30,14 +35,28 @@ const StartSettingGame = () => {
     const subscription = GameConsumer.subscriptions.create(
       { channel: "GameChannel", game_id:joinToken },
       {
+        connected() {
+          console.log("✅ ActionCable接続成功 - GameChannel:", joinToken);
+        },
+        disconnected() {
+          console.log("❌ ActionCable切断 - GameChannel:", joinToken);
+          console.warn("⚠️ ActionCableが切断されました。画面をリロードしてください。");
+        },
+        rejected() {
+          console.error("🚫 ActionCable接続拒否 - GameChannel:", joinToken);
+        },
         received(data: GameEvent){
+          console.log("📩 ActionCableイベント受信:", data);
           if(data.type === "PLAYER_ADDED" ){
+            console.log("👤 PLAYER_ADDED イベント - プレイヤーリスト更新:", data.all_players);
             setPlayers(data.all_players);
           } else if(data.type === "PLAYER_REMOVED"){
             // プレイヤーが退出した時、リストを更新
+            console.log("👋 PLAYER_REMOVED イベント - プレイヤーリスト更新:", data.all_players);
             setPlayers(data.all_players);
           } else if(data.type === "GAME_DELETED"){
             // ホストが退出してゲームが削除された時
+            console.log("🗑️ GAME_DELETED イベント受信");
             alert(data.message || "ゲームが終了しました");
             navigate("/games");
           }
