@@ -15,10 +15,9 @@ const StartSettingGame = () => {
 
     const fetchInitialPlayers = async () => {
       try {
-        // joinTokenを使って、そのゲームのプレイヤー一覧を返すAPIを叩く
         const response = await fetch(`http://localhost:3000/api/games/${joinToken}/players`);
         const data = await response.json();
-        setPlayers(data); // 最初に今のメンバーをセット！
+        setPlayers(data);
       } catch (error) {
         console.error("プレイヤーの取得に失敗しました", error);
       }

@@ -9,7 +9,6 @@ const PlayScreen = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('game');
 
-  // TODO: ここで初期データのフェッチと ActionCable の接続を行う
 
   return (
     <div className="min-h-screen bg-base-200 p-4 pb-20">

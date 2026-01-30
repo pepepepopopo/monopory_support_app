@@ -19,9 +19,14 @@ const NewGame = () => {
         return
       };
       setIsLoading(true);
+
       const data = await CreateGame();
       const gameId = data.game.id
-      await CreatePlayer(gameId, name, selectedColor, isHost);
+      const playerData = await CreatePlayer(gameId, name, selectedColor, isHost);
+
+      localStorage.setItem("playerId", playerData.id.string());
+      localStorage.setItem("isHost", "true");
+
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch{
       console.error("ゲームを開始できませんでした")
