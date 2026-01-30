@@ -1,12 +1,8 @@
-import { useParams } from "react-router";
 import { useState } from "react";
-import type { Player } from "../../../types/game"
 
 type TabType = 'game' | 'history';
 
 const PlayScreen = () => {
-  const { joinToken } = useParams<{ joinToken: string }>();
-  const [players, setPlayers] = useState<Player[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('game');
 
 
