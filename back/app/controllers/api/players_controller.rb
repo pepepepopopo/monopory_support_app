@@ -25,10 +25,32 @@ class Api::PlayersController < ApplicationController
 
   def destroy
     player = Player.find(params[:id])
-    if player.destroy
-      render json: { status:200, player:player }
+    game = player.game
+
+    if player.is_host
+      # ホストが退出する場合: ゲームごと削除
+      if game.destroy
+        # ActionCableで全員に通知
+        GameChannel.broadcast_to(game, {
+          type: "GAME_DELETED",
+          message: "ホストが退出したため、ゲームが終了しました"
+        })
+        render json: { status: 200, message: "ゲームを削除しました" }
+      else
+        render json: { status: 500, message: "ゲーム削除に失敗しました" }
+      end
     else
-      render json: { status:500, message:"プレイヤー削除に失敗しました"}
+      # 一般プレイヤーが退出する場合: プレイヤーのみ削除
+      if player.destroy
+        # 残りのメンバーに更新を通知
+        GameChannel.broadcast_to(game, {
+          type: "PLAYER_REMOVED",
+          all_players: game.players
+        })
+        render json: { status: 200, message: "プレイヤーを削除しました" }
+      else
+        render json: { status: 500, message: "プレイヤー削除に失敗しました" }
+      end
     end
   end
 

@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import CopyToClipboard from "../../../components/button/CopyToClipboard";
 import QrCodeModal from "../../../components/Modal/QrCodeModal";
 import GameConsumer from "../../../utils/actionCable";
+import usePlayerCleanup from "../../../hooks/usePlayerCleanup";
 import type { GameEvent, Player } from "../../../types/game"
 
 const StartSettingGame = () => {
   const { joinToken } = useParams<{ joinToken: string }>();
   const [players, setPlayers] = useState<Player[]>([]);
   const navigate = useNavigate();
+  const { cleanupPlayer } = usePlayerCleanup();
 
   useEffect(()=> {
     if (!joinToken) return;
@@ -31,6 +33,13 @@ const StartSettingGame = () => {
         received(data: GameEvent){
           if(data.type === "PLAYER_ADDED" ){
             setPlayers(data.all_players);
+          } else if(data.type === "PLAYER_REMOVED"){
+            // プレイヤーが退出した時、リストを更新
+            setPlayers(data.all_players);
+          } else if(data.type === "GAME_DELETED"){
+            // ホストが退出してゲームが削除された時
+            alert(data.message || "ゲームが終了しました");
+            navigate("/games");
           }
         },
       }
@@ -44,11 +53,18 @@ const StartSettingGame = () => {
     navigate(`/games/${joinToken}/play`);
   }
 
+  const handleBack = async() => {
+    // プレイヤーをゲームから削除
+    await cleanupPlayer();
+    // トップページへ戻る
+    navigate("/games");
+  }
+
   return(
     <>
-      <Link to="/games" className="btn mb-3">
+      <button onClick={handleBack} className="btn mb-3">
         戻る
-      </Link>
+      </button>
       <div className="flex flex-col gap-6 rounded-xl border glass px-6 [&:last-child]:pb-6">
         <div className="grid auto-rows-min gap-1.5 pt-6 ">
           <div className="leading-none">ゲームの初期設定を行います</div>
