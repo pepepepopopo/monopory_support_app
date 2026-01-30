@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import CreatePlayer from "../../services/api/player/createPlayer";
-import JoinGame from "../../services/api/games/JoinGame";
-import PlayerColor from "../../utils/PlayerColor";
-import type { Player } from "../../types/game";
+import CreatePlayer from "../../../services/api/player/createPlayer";
+import JoinGame from "../../../services/api/games/JoinGame";
+import PlayerColor from "../../../utils/PlayerColor";
+import type { Player } from "../../../types/game";
 
 
 const GameJoin = () =>{
@@ -16,18 +16,21 @@ const GameJoin = () =>{
   const hostPlayer = players.find(p => p.is_host);
   const navigate = useNavigate();
 
-  const fetchInitialPlayers = async () => {
-    try {
-      // joinTokenを使って、そのゲームのプレイヤー一覧を返すAPIを叩く
-      const response = await fetch(`http://localhost:3000/api/games/${joinToken}/players`);
-      const data = await response.json();
-      setPlayers(data); // 最初に今のメンバーをセット！
-    } catch (error) {
-      console.error("プレイヤーの取得に失敗しました", error);
-    }
-  };
+  useEffect(() => {
+    if (!joinToken) return;
+    const fetchInitialPlayers = async () => {
+      try {
+        // joinTokenを使って、そのゲームのプレイヤー一覧を返すAPIを叩く
+        const response = await fetch(`http://localhost:3000/api/games/${joinToken}/players`);
+        const data = await response.json();
+        setPlayers(data); // 最初に今のメンバーをセット！
+      } catch (error) {
+        console.error("プレイヤーの取得に失敗しました", error);
+      }
+    };
 
-  fetchInitialPlayers();
+    fetchInitialPlayers();
+  },[joinToken])
 
   const handleStartGame = async() => {
     if (isLoading) return;
@@ -43,7 +46,9 @@ const GameJoin = () =>{
       setIsLoading(true);
       const data = await JoinGame(joinToken);
       const gameId = data.game.id
-      await CreatePlayer(gameId, name, selectedColor, isHost);
+      const playerData = await CreatePlayer(gameId, name, selectedColor, isHost);
+      localStorage.setItem("playerId", playerData.id.string());
+      localStorage.setItem("isHost", "false")
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch(error){
       alert(`ゲームに参加できませんでした\nゲームが開始されていないことを確認してください`)

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import CreateGame from '../../services/api/games/createGame';
-import PlayerColor from "../../utils/PlayerColor";
-import CreatePlayer from "../../services/api/player/createPlayer";
+import CreateGame from '../../../services/api/games/createGame';
+import PlayerColor from "../../../utils/PlayerColor";
+import CreatePlayer from "../../../services/api/player/createPlayer";
 
 const NewGame = () => {
   const [ isHost, _setIsHost ] = useState(true);
@@ -19,9 +19,14 @@ const NewGame = () => {
         return
       };
       setIsLoading(true);
+
       const data = await CreateGame();
       const gameId = data.game.id
-      await CreatePlayer(gameId, name, selectedColor, isHost);
+      const playerData = await CreatePlayer(gameId, name, selectedColor, isHost);
+
+      localStorage.setItem("playerId", playerData.id.string());
+      localStorage.setItem("isHost", "true");
+
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch{
       console.error("ゲームを開始できませんでした")

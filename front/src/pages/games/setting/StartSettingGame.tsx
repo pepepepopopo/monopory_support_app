@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
-import CopyToClipboard from "../../components/button/CopyToClipboard";
-import QrCodeModal from "../../components/Modal/QrCodeModal";
-import GameConsumer from "../../utils/actionCable";
-import type { GameEvent, Player } from "../../types/game";
+import { Link, useParams, useNavigate } from "react-router";
+import CopyToClipboard from "../../../components/button/CopyToClipboard";
+import QrCodeModal from "../../../components/Modal/QrCodeModal";
+import GameConsumer from "../../../utils/actionCable";
+import type { GameEvent, Player } from "../../../types/game"
 
 const StartSettingGame = () => {
   const { joinToken } = useParams<{ joinToken: string }>();
   const [players, setPlayers] = useState<Player[]>([]);
+  const navigate = useNavigate();
 
   useEffect(()=> {
     if (!joinToken) return;
 
     const fetchInitialPlayers = async () => {
       try {
-        // joinTokenを使って、そのゲームのプレイヤー一覧を返すAPIを叩く
         const response = await fetch(`http://localhost:3000/api/games/${joinToken}/players`);
         const data = await response.json();
-        setPlayers(data); // 最初に今のメンバーをセット！
+        setPlayers(data);
       } catch (error) {
         console.error("プレイヤーの取得に失敗しました", error);
       }
@@ -39,6 +39,11 @@ const StartSettingGame = () => {
       subscription.unsubscribe();
     };
   }, [joinToken]);
+
+  const handleStartGame = async() =>{
+    navigate(`/games/${joinToken}/play`);
+  }
+
   return(
     <>
       <Link to="/games" className="btn mb-3">
@@ -87,6 +92,7 @@ const StartSettingGame = () => {
         </div>
         <button
           type="button"
+          onClick={() => handleStartGame()}
           className="btn btn-block btn-primary">ゲームを開始</button>
       </div>
     </>
