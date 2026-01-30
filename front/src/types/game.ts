@@ -7,7 +7,8 @@ export interface Player{
 }
 
 export interface GameEvent{
-  type: "PLAYER_ADDED" | "MONEY_TRANSFERRED";
+  type: "PLAYER_ADDED" | "PLAYER_REMOVED" | "GAME_DELETED" | "MONEY_TRANSFERRED";
   player?: Player;
   all_players: Player[];
+  message?: string;
 }

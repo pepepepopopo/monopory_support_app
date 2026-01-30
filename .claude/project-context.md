@@ -38,9 +38,9 @@ monopory_support_app/
 │       │       │   └── StartSettingGame.tsx # プレイヤーリスト + 開始
 │       │       └── started/        # フェーズ2: ゲーム実行画面
 │       │           └── PlayScreen.tsx       # 送金管理（未実装）
-│       ├── hooks/                  # カスタムフック（未作成）
-│       │   ├── useFetchPlayers.ts  # プレイヤー取得ロジック
-│       │   └── usePlayerCleanup.ts # 退出処理ロジック
+│       ├── hooks/                  # カスタムフック
+│       │   ├── useFetchPlayers.ts  # プレイヤー取得ロジック（未実装）
+│       │   └── usePlayerCleanup.ts # 退出処理ロジック（✅実装済み）
 │       ├── services/               # API通信
 │       ├── types/
 │       │   └── game.ts             # Player, GameEvent型定義
@@ -137,46 +137,34 @@ monopory_support_app/
    - QRコード・参加コード表示
    - 「ゲームを開始」ボタンで `/games/:join_token/play` へ遷移
 
-#### 未実装機能（仕様策定済み）
+**D. 退出処理（クリーンアップ）** ✅実装済み
+1. **カスタムフック**: [usePlayerCleanup.ts](front/src/hooks/usePlayerCleanup.ts)
+   - ブラウザクローズ時に `navigator.sendBeacon()` で `DELETE /api/players/:id` を実行
+   - `beforeunload` イベントで検知
+   - 手動実行用の `cleanupPlayer()` 関数を提供（戻るボタン用）
 
-**D. 退出処理（クリーンアップ）**
-1. **フック**: `usePlayerCleanup.ts`（未作成）
-   - 画面遷移・ブラウザクローズ時に `DELETE /api/players/:id` を実行
-   - `beforeunload`, `visibilitychange` イベントで検知
+2. **バックエンド**: [players_controller.rb:26-55](back/app/controllers/api/players_controller.rb#L26-L55)
+   - **ホスト退出**: `game.destroy` でゲームごと削除 → `GAME_DELETED` イベントをブロードキャスト
+   - **一般プレイヤー退出**: `player.destroy` → `PLAYER_REMOVED` イベントで残りのメンバーに通知
 
-2. **バックエンド改修**: [players_controller.rb:26-33](back/app/controllers/api/players_controller.rb#L26-L33)
-   ```ruby
-   def destroy
-     player = Player.find(params[:id])
-     game = player.game
+3. **型定義**: [game.ts:9-14](front/src/types/game.ts#L9-L14)
+   - `GameEvent` に `PLAYER_REMOVED`, `GAME_DELETED` イベントを追加
+   - `message` フィールドを追加（削除通知用）
 
-     if player.is_host
-       # ホストの場合: ゲームごと削除
-       game.destroy
-       # ActionCableで全員に通知
-       GameChannel.broadcast_to(game, {
-         type: "GAME_DELETED",
-         message: "ホストが退出したため、ゲームが終了しました"
-       })
-     else
-       # 一般プレイヤー: 自分だけ削除
-       player.destroy
-       # 残りのメンバーに更新を通知
-       GameChannel.broadcast_to(game, {
-         type: "PLAYER_REMOVED",
-         all_players: game.players
-       })
-     end
-
-     render json: { status: 200 }
-   end
-   ```
-
-3. **フロントエンド改修**: [StartSettingGame.tsx](front/src/pages/games/setting/StartSettingGame.tsx)
-   - `GAME_DELETED` イベント受信時、トップページへ強制リダイレクト
-   - `PLAYER_REMOVED` イベント受信時、リスト更新
+4. **StartSettingGame統合**: [StartSettingGame.tsx](front/src/pages/games/setting/StartSettingGame.tsx)
+   - `usePlayerCleanup` フックを適用
+   - 「戻る」ボタンに `handleBack` 関数を適用（プレイヤー削除 → トップページへ遷移）
+   - ActionCableで新イベントを受信:
+     - `PLAYER_REMOVED`: プレイヤーリストを更新
+     - `GAME_DELETED`: アラート表示 → トップページへ強制リダイレクト
 
 **E. localStorage活用**
+- ✅ プレイヤー作成時に `playerId` と `isHost` を保存（実装済み）
+- ❌ ブラウザリロード時の復元機能（未実装）
+
+#### 未実装機能（仕様策定済み）
+
+**F. localStorage復元機能**
 - ブラウザリロード時に `playerId` と `isHost` を復元
 - 該当プレイヤーとして画面に復帰可能にする
 
@@ -261,15 +249,15 @@ monopory_support_app/
 | `GAME_DELETED` | ホスト退出時 | `{ type, message }` |
 | `MONEY_TRANSFERRED` | 送金実行時（未実装） | `{ type, all_players, transaction }` |
 
-### 3. クリーンアップ戦略
+### 3. クリーンアップ戦略 ✅実装済み
 
 **問題**: ブラウザを閉じても `players` レコードが残り、リストに幽霊プレイヤーが表示される
 
-**解決策**:
-1. **`usePlayerCleanup` フック** で画面遷移・ブラウザクローズを検知
-2. `beforeunload`, `visibilitychange` イベントで `DELETE /api/players/:id` を実行
-3. Rails側で「ホストなら `game.destroy`、プレイヤーなら `player.destroy`」を判定
-4. ActionCableで全員に状態変更を通知
+**解決策**（実装済み）:
+1. ✅ **`usePlayerCleanup` フック** で画面遷移・ブラウザクローズを検知
+2. ✅ `beforeunload` イベントで `navigator.sendBeacon()` により `DELETE /api/players/:id` を実行
+3. ✅ Rails側で「ホストなら `game.destroy`、プレイヤーなら `player.destroy`」を判定
+4. ✅ ActionCableで全員に状態変更を通知（`GAME_DELETED`, `PLAYER_REMOVED`）
 
 ---
 
@@ -290,7 +278,7 @@ monopory_support_app/
 |---------|------|------|---------|
 | GET | `/api/games/:join_token/players` | ゲーム内プレイヤーリスト | ✅ |
 | POST | `/api/players` | プレイヤー作成 | ✅ |
-| DELETE | `/api/players/:id` | プレイヤー削除 | ⚠️ 改修必要 |
+| DELETE | `/api/players/:id` | プレイヤー削除（ホスト時はゲーム削除） | ✅ |
 
 ### Transactions（未実装）
 
@@ -305,40 +293,24 @@ monopory_support_app/
 
 ### 優先度 高
 
-1. **`usePlayerCleanup` フックの作成**
-   - ファイル: `front/src/hooks/usePlayerCleanup.ts`
-   - 役割: 画面遷移・ブラウザクローズ時の退出処理
-
-2. **PlayersController#destroy の改修**
-   - ファイル: [players_controller.rb:26-33](back/app/controllers/api/players_controller.rb#L26-L33)
-   - 役割: ホスト退出時にゲーム削除 + ActionCable通知
-
-3. **GameEvent型定義の拡張**
-   - ファイル: [game.ts:9-13](front/src/types/game.ts#L9-L13)
-   - 追加イベント: `PLAYER_REMOVED`, `GAME_DELETED`
-
-4. **StartSettingGameの退出処理統合**
-   - ファイル: [StartSettingGame.tsx](front/src/pages/games/setting/StartSettingGame.tsx)
-   - 役割: `usePlayerCleanup` フック適用 + イベント処理
-
-### 優先度 中
-
-5. **localStorage復元機能**
-   - 役割: リロード時に `playerId` から自動復帰
-
-6. **PlayScreen（送金画面）の実装**
+1. **PlayScreen（送金画面）の実装**
    - ファイル: `front/src/pages/games/started/PlayScreen.tsx`
    - 役割: 送金フォーム + 所持金表示
 
-7. **Transactionモデル・コントローラー作成**
+2. **localStorage復元機能**
+   - 役割: リロード時に `playerId` から自動復帰
+
+### 優先度 中
+
+3. **Transactionモデル・コントローラー作成**
    - 役割: 送金ロジック + ActionCable通知
+
+4. **初期所持金設定機能**
+   - 役割: ホストが開始前に金額を一括設定
 
 ### 優先度 低
 
-8. **初期所持金設定機能**
-   - 役割: ホストが開始前に金額を一括設定
-
-9. **ホスト交代機能**
+5. **ホスト交代機能**
    - 役割: 現ホストが次ホストを指定
 
 ---
@@ -397,4 +369,13 @@ touch NewComponent.tsx
 ---
 
 **最終更新**: 2026-01-30
-**現在のフェーズ**: フェーズ1（初期設定）完了 → フェーズ2（送金管理）準備中
+
+**現在のフェーズ**: フェーズ1（初期設定）完了 ✅
+- ゲーム作成・参加機能
+- プレイヤーリスト同期
+- **退出処理（クリーンアップ）実装完了** 🎉
+  - `usePlayerCleanup` フック
+  - ホスト退出時のゲーム削除
+  - ActionCableイベント通知
+
+**次のフェーズ**: フェーズ2（送金管理）実装開始
