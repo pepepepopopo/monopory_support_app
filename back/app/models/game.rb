@@ -14,6 +14,8 @@ class Game < ApplicationRecord
   private
 
   def generate_join_token
+    return if join_token.present?
+
     loop do
       token = SecureRandom.base58(8)
       unless Game.exists?(join_token: token)

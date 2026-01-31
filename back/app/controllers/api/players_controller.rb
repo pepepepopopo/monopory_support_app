@@ -7,6 +7,13 @@ class Api::PlayersController < ApplicationController
   def create
     @player = Player.new(player_params)
 
+    # ゲームが待機中でなければ参加を拒否
+    game = Game.find_by(id: player_params[:game_id])
+    unless game&.waiting?
+      render json: { error: "このゲームは既に開始されているため参加できません" }, status: :forbidden
+      return
+    end
+
     if @player.save
       # 保存したプレイヤーに紐づくゲームを取得
       game = @player.game
