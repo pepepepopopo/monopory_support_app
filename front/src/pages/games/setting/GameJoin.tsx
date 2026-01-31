@@ -11,6 +11,7 @@ const GameJoin = () =>{
   const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   const [ isLoading, setIsLoading ] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   const { joinToken } = useParams<{ joinToken: string }>();
   const [players, setPlayers] = useState<Player[]>([]);
   const hostPlayer = players.find(p => p.is_host);
@@ -18,17 +19,31 @@ const GameJoin = () =>{
 
   useEffect(() => {
     if (!joinToken) return;
+
+    // ゲームのステータスを確認
+    const checkGameStatus = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/games/${joinToken}`);
+        const data = await response.json();
+        if (data.game?.status !== "waiting") {
+          setGameStarted(true);
+        }
+      } catch (error) {
+        console.error("ゲーム情報の取得に失敗しました", error);
+      }
+    };
+
     const fetchInitialPlayers = async () => {
       try {
-        // joinTokenを使って、そのゲームのプレイヤー一覧を返すAPIを叩く
         const response = await fetch(`http://localhost:3000/api/games/${joinToken}/players`);
         const data = await response.json();
-        setPlayers(data); // 最初に今のメンバーをセット！
+        setPlayers(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("プレイヤーの取得に失敗しました", error);
       }
     };
 
+    checkGameStatus();
     fetchInitialPlayers();
   },[joinToken])
 
@@ -56,6 +71,22 @@ const GameJoin = () =>{
     }finally{
       setIsLoading(false);
     }
+  }
+
+  if (gameStarted) {
+    return(
+      <>
+        <Link to="/" className="btn mb-3">
+          戻る
+        </Link>
+        <div className="flex flex-col gap-6 rounded-xl border glass px-6 py-6">
+          <div className="text-center">
+            <div className="text-lg font-bold">このゲームは既に開始されています</div>
+            <div className="text-sm opacity-60 mt-2">新たに参加することはできません</div>
+          </div>
+        </div>
+      </>
+    )
   }
 
   return(

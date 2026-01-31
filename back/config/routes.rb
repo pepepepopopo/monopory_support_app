@@ -3,8 +3,11 @@ Rails.application.routes.draw do
   namespace :api do
     resources :games, param: :join_token do
       resources :players, only: [:index]
+      resources :logs, only: [:index, :create]
+      member do
+        post :start
+      end
     end
     resources :players, only: [:index, :create, :update, :destroy]
-    resources :logs, only: [:index, :create, :update, :destroy]
   end
 end

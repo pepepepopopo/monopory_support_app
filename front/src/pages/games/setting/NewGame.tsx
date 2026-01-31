@@ -20,23 +20,12 @@ const NewGame = () => {
       };
       setIsLoading(true);
 
-      const data = await CreateGame();
+      const data = await CreateGame(15000);
       const gameId = data.game.id
       const playerData = await CreatePlayer(gameId, name, selectedColor, isHost);
 
-      console.log("💾 プレイヤー作成成功:", playerData);
-      console.log("💾 sessionStorage保存前:", {
-        playerId: sessionStorage.getItem("playerId"),
-        isHost: sessionStorage.getItem("isHost")
-      });
-
       sessionStorage.setItem("playerId", playerData.id.toString());
       sessionStorage.setItem("isHost", "true");
-
-      console.log("💾 sessionStorage保存後:", {
-        playerId: sessionStorage.getItem("playerId"),
-        isHost: sessionStorage.getItem("isHost")
-      });
 
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch(error){
