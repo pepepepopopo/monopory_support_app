@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       resources :logs, only: [:index, :create]
       member do
         post :start
+        post :finish
       end
     end
     resources :players, only: [:index, :create, :update, :destroy]

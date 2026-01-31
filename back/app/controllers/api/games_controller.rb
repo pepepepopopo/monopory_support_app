@@ -53,6 +53,24 @@ class Api::GamesController < ApplicationController
     render json: { status: 200, game: game, players: game.players.as_json }
   end
 
+  def finish
+    game = Game.find_by!(join_token: params[:join_token])
+
+    unless game.playing?
+      render json: { status: 400, message: "ゲームはプレイ中ではありません" }, status: :bad_request
+      return
+    end
+
+    game.update(status: :finished)
+
+    GameChannel.broadcast_to(game, {
+      type: "GAME_FINISHED",
+      all_players: game.players.order(money: :desc).as_json
+    })
+
+    render json: { status: 200, game: game, players: game.players.order(money: :desc).as_json }
+  end
+
   private
   def set_game
     @game = Game.find_by!(join_token: params[:join_token])

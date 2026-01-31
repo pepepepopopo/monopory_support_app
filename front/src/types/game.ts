@@ -20,7 +20,7 @@ export interface TransactionLog {
 }
 
 export interface GameEvent{
-  type: "PLAYER_ADDED" | "PLAYER_REMOVED" | "GAME_DELETED" | "GAME_STARTED" | "MONEY_TRANSFERRED";
+  type: "PLAYER_ADDED" | "PLAYER_REMOVED" | "GAME_DELETED" | "GAME_STARTED" | "MONEY_TRANSFERRED" | "GAME_FINISHED";
   player?: Player;
   all_players: Player[];
   message?: string;

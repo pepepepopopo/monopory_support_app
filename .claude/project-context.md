@@ -1,6 +1,6 @@
-# 🎲 DigiPoly プロジェクト仕様書
+# DigiPoly プロジェクト仕様書
 
-## 📌 プロジェクト概要
+## プロジェクト概要
 
 **アプリ名**: DigiPoly
 **目的**: オフラインのモノポリーをスマホで補助的にプレイするアプリ
@@ -19,7 +19,7 @@
 
 ---
 
-## 🏗️ プロジェクト構造
+## プロジェクト構造
 
 ```
 monopory_support_app/
@@ -37,32 +37,34 @@ monopory_support_app/
 │       │       │   ├── GameJoin.tsx         # ゲーム参加
 │       │       │   └── StartSettingGame.tsx # プレイヤーリスト + 開始
 │       │       └── started/        # フェーズ2: ゲーム実行画面
-│       │           └── PlayScreen.tsx       # 送金管理（未実装）
+│       │           └── PlayScreen.tsx       # 送金管理（実装済み）
 │       ├── hooks/                  # カスタムフック
-│       │   ├── useFetchPlayers.ts  # プレイヤー取得ロジック（未実装）
-│       │   └── usePlayerCleanup.ts # 退出処理ロジック（✅実装済み）
+│       │   └── usePlayerCleanup.ts # 退出処理ロジック（実装済み）
 │       ├── services/               # API通信
+│       │   └── api/games/
+│       │       └── createGame.tsx
 │       ├── types/
-│       │   └── game.ts             # Player, GameEvent型定義
+│       │   └── game.ts             # Player, GameEvent, TransactionLog型定義
 │       └── utils/
 │           └── actionCable.ts      # ActionCable接続設定
 │
 └── back/                           # バックエンド (Rails)
     └── app/
         ├── models/
-        │   ├── game.rb             # has_many :players, join_token生成
+        │   ├── game.rb             # has_many :players, :logs, join_token生成, status enum
         │   ├── player.rb           # belongs_to :game
-        │   └── log.rb              # 送金履歴（未使用）
+        │   └── log.rb              # 送金履歴（1対多送金対応）
         ├── controllers/api/
-        │   ├── games_controller.rb # ゲームCRUD
-        │   └── players_controller.rb # プレイヤーCRUD
+        │   ├── games_controller.rb # ゲームCRUD + start アクション
+        │   ├── players_controller.rb # プレイヤーCRUD + ゲーム開始後の参加制限
+        │   └── logs_controller.rb  # 送金履歴の取得・作成
         └── channels/
             └── game_channel.rb     # リアルタイム通信チャンネル
 ```
 
 ---
 
-## 📊 データモデル
+## データモデル
 
 ### Game (ゲーム)
 
@@ -71,9 +73,11 @@ monopory_support_app/
 | `id` | integer | 主キー |
 | `join_token` | string | 8文字のユニークな参加コード（base58） |
 | `start_money` | integer | 初期所持金（デフォルト: 1500） |
-| `status` | enum | `waiting`, `playing`, `finished` |
+| `status` | enum | `waiting: 0`, `playing: 1`, `finished: 2` |
 
-**関連**: `has_many :players, dependent: :destroy`
+**関連**: `has_many :players, dependent: :destroy` / `has_many :logs, dependent: :destroy`
+
+**注意**: `generate_join_token` は `before_validation` コールバックで実行。`join_token.present?` の場合はスキップする（更新時にトークンが変わるバグを防止）。
 
 ### Player (プレイヤー)
 
@@ -88,141 +92,102 @@ monopory_support_app/
 
 **関連**: `belongs_to :game`
 
-### Log (送金履歴) ※フェーズ2で使用予定
+### Log (送金履歴)
 
 | カラム | 型 | 説明 |
 |--------|-----|------|
 | `id` | integer | 主キー |
 | `game_id` | integer | 外部キー |
-| `sender_id` | integer | 送金元プレイヤー |
-| `receiver_id` | integer | 送金先プレイヤー |
-| `amount` | integer | 送金額 |
-| `created_at` | datetime | 送金日時 |
+| `sender_player_id` | integer (nullable) | 送金元プレイヤー（NULL = 銀行） |
+| `amount` | integer | 送金合計額 |
+
+**関連**: `belongs_to :game` / `belongs_to :sender_player, optional: true` / `has_many :log_receivers`
+
+### LogReceiver (送金先)
+
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| `id` | integer | 主キー |
+| `log_id` | integer | 外部キー |
+| `player_id` | integer | 受取プレイヤー |
+| `amount` | integer | 受取金額 |
+
+**関連**: `belongs_to :log` / `belongs_to :player`
 
 ---
 
-## 🎯 フェーズ別実装計画
+## フェーズ別実装状況
 
-### ✅ フェーズ1: 初期設定フェーズ（ロビー）
-
-#### 目的
-プレイヤーが同じゲームに参加し、初期状態を共有する。
+### フェーズ1: 初期設定フェーズ（ロビー）- 完了
 
 #### 実装済み機能
 
 **A. ゲーム作成（ホスト）**
-1. **ファイル**: [NewGame.tsx](front/src/pages/games/setting/NewGame.tsx)
-2. **フロー**:
-   - `POST /api/games` でゲーム作成
-   - `join_token` を取得
-   - ホスト自身を `POST /api/players` で登録（`is_host: true`）
-   - `localStorage` に `playerId` と `isHost: true` を保存
-   - [StartSettingGame.tsx](front/src/pages/games/setting/StartSettingGame.tsx) へ遷移
+- `POST /api/games` でゲーム作成
+- `join_token` を取得
+- ホスト自身を `POST /api/players` で登録（`is_host: true`）
+- `sessionStorage` に `playerId` と `isHost: true` を保存
+- StartSettingGame へ遷移
 
 **B. ゲーム参加（一般プレイヤー）**
-1. **ファイル**: [GameJoin.tsx](front/src/pages/games/setting/GameJoin.tsx)
-2. **フロー**:
-   - URLパラメータから `join_token` を取得
-   - `GET /api/games/:join_token` でゲーム存在確認
-   - 名前・色を入力後、`POST /api/players` で登録（`is_host: false`）
-   - `localStorage` に `playerId` と `isHost: false` を保存
-   - [StartSettingGame.tsx](front/src/pages/games/setting/StartSettingGame.tsx) へ遷移
+- URLパラメータから `join_token` を取得
+- `GET /api/games/:join_token` でゲーム存在確認
+- ゲームが `playing` 状態の場合は参加不可（「既に開始されています」表示）
+- 名前・色を入力後、`POST /api/players` で登録（`is_host: false`）
+- `sessionStorage` に `playerId` と `isHost: false` を保存
+- StartSettingGame へ遷移
 
 **C. プレイヤーリスト同期**
-1. **ファイル**: [StartSettingGame.tsx](front/src/pages/games/setting/StartSettingGame.tsx)
-2. **フロー**:
-   - `GET /api/games/:join_token/players` で初期データ取得
-   - ActionCable (`GameChannel`) をサブスクライブ
-   - `PLAYER_ADDED` イベントを受信して `all_players` で状態更新
-   - QRコード・参加コード表示
-   - 「ゲームを開始」ボタンで `/games/:join_token/play` へ遷移
+- `GET /api/games/:join_token/players` で初期データ取得
+- ActionCable (`GameChannel`) をサブスクライブ（`subscriptionRef` パターン）
+- `PLAYER_ADDED` / `PLAYER_REMOVED` / `GAME_DELETED` / `GAME_STARTED` イベント対応
+- QRコード・参加コード表示
+- 「ゲームを開始」ボタンで `POST /api/games/:join_token/start` → PlayScreen へ遷移
+- ゲーム開始済みの場合は自動的に PlayScreen へリダイレクト
 
-**D. 退出処理（クリーンアップ）** ✅実装済み
-1. **カスタムフック**: [usePlayerCleanup.ts](front/src/hooks/usePlayerCleanup.ts)
-   - ブラウザクローズ時に `navigator.sendBeacon()` で `DELETE /api/players/:id` を実行
-   - `beforeunload` イベントで検知
-   - 手動実行用の `cleanupPlayer()` 関数を提供（戻るボタン用）
+**D. ゲーム開始**
+- `POST /api/games/:join_token/start` でゲームステータスを `playing` に変更
+- 全プレイヤーの所持金を `start_money` で初期化
+- `GAME_STARTED` イベントをブロードキャスト
+- ゲームが `waiting` 状態でない場合はエラー返却
 
-2. **バックエンド**: [players_controller.rb:26-55](back/app/controllers/api/players_controller.rb#L26-L55)
-   - **ホスト退出**: `game.destroy` でゲームごと削除 → `GAME_DELETED` イベントをブロードキャスト
-   - **一般プレイヤー退出**: `player.destroy` → `PLAYER_REMOVED` イベントで残りのメンバーに通知
-
-3. **型定義**: [game.ts:9-14](front/src/types/game.ts#L9-L14)
-   - `GameEvent` に `PLAYER_REMOVED`, `GAME_DELETED` イベントを追加
-   - `message` フィールドを追加（削除通知用）
-
-4. **StartSettingGame統合**: [StartSettingGame.tsx](front/src/pages/games/setting/StartSettingGame.tsx)
-   - `usePlayerCleanup` フックを適用
-   - 「戻る」ボタンに `handleBack` 関数を適用（プレイヤー削除 → トップページへ遷移）
-   - ActionCableで新イベントを受信:
-     - `PLAYER_REMOVED`: プレイヤーリストを更新
-     - `GAME_DELETED`: アラート表示 → トップページへ強制リダイレクト
-
-**E. localStorage活用**
-- ✅ プレイヤー作成時に `playerId` と `isHost` を保存（実装済み）
-- ❌ ブラウザリロード時の復元機能（未実装）
-
-#### 未実装機能（仕様策定済み）
-
-**F. localStorage復元機能**
-- ブラウザリロード時に `playerId` と `isHost` を復元
-- 該当プレイヤーとして画面に復帰可能にする
+**E. 退出処理（クリーンアップ）**
+- `usePlayerCleanup` フック：明示的な `cleanupPlayer()` 呼び出しのみ（戻るボタン）
+- `beforeunload` は削除済み（リロードとタブ閉じの区別不可のため）
+- タブ閉じ時のクリーンアップはサーバーサイドで対応予定
+- ホスト退出時: `game.destroy` → `GAME_DELETED` ブロードキャスト
+- 一般プレイヤー退出時: `player.destroy` → `PLAYER_REMOVED` ブロードキャスト
+- `isLeavingRef` で自身の退出時に `GAME_DELETED` アラートをスキップ
 
 ---
 
-### 🚧 フェーズ2: 送金管理フェーズ（未実装）
+### フェーズ2: 送金管理フェーズ - 完了
 
-#### 目的
-紙幣のやり取りをスマホで代替し、送金や受取を簡潔に行う。
-
-#### 実装予定機能
+#### 実装済み機能
 
 **A. PlayScreen（メイン画面）**
-1. **ファイル**: `front/src/pages/games/started/PlayScreen.tsx`（ディレクトリのみ存在）
-2. **実装内容**:
-   - 全プレイヤ��の所持金をリアルタイム表示
-   - 送金フォーム（金額入力 + 宛先選択）
-   - 送金履歴タイムライン
+- 全プレイヤーの所持金をリアルタイム表示
+- 送金フォーム（送金元選択 + 送金先複数選択 + 金額入力）
+- クイック金額ボタン（+1, +5, +10, +50, +100, +200, +500, C リセット）
+- 取引履歴タブ
 
 **B. 送金ロジック**
-1. **ホスト専用機能**:
-   - 「自分」⇔「銀行」の切り替えスイッチ
-   - 銀行として送金可能（給料・通過ボーナスなど）
+- **1対多送金**: 1人の送金元から複数の送金先へ同時送金
+- **ホスト専用**: 銀行モード切り替え（`btn-warning` トグルボタン + 銀行アイコン）
+- **全員共通**: 自分から他��レイヤーへの送金
+- **残高チェック**: 銀行以外は残高不足時にアラート
 
-2. **全員共通機能**:
-   - 金額入力: クイックボタン（¥100, ¥500, ¥1000）+ 手入力
-   - 宛先選択: プレイヤーリスト + 銀行オプション
-   - 送金実行: `POST /api/transactions` → ActionCableで全員に通知
-
-**C. バックエンド**
-1. **新規モデル**: `Transaction`
-   ```ruby
-   # app/models/transaction.rb
-   class Transaction < ApplicationRecord
-     belongs_to :game
-     belongs_to :sender, class_name: 'Player', optional: true # 銀行の場合null
-     belongs_to :receiver, class_name: 'Player'
-
-     validates :amount, numericality: { greater_than: 0 }
-   end
-   ```
-
-2. **コントローラー**: `app/controllers/api/transactions_controller.rb`
-   - `create` アクション: 送金処理 + 残高更新 + ActionCable通知
-
-3. **GameEvent型定義更新**: [game.ts:9-13](front/src/types/game.ts#L9-L13)
-   ```typescript
-   export interface GameEvent {
-     type: "PLAYER_ADDED" | "PLAYER_REMOVED" | "GAME_DELETED" | "MONEY_TRANSFERRED";
-     player?: Player;
-     all_players: Player[];
-     transaction?: Transaction;
-   }
-   ```
+**C. バックエンド（logs_controller）**
+- `GET /api/games/:game_join_token/logs` - 取引履歴取得（sender, receivers含む）
+- `POST /api/games/:game_join_token/logs` - 送金実行
+  - `ActiveRecord::Base.transaction` でアトミック処理
+  - 送金元の残高減額 + 各送金先の残高加算
+  - `Log` + `LogReceiver` レコード作成
+  - `MONEY_TRANSFERRED` イベントをブロードキャスト
 
 ---
 
-### 🎡 フェーズ3: ルーレット機能（構想段階）
+### フェーズ3: ルーレット機能（構想段階）
 
 - サイコロ・イベント抽選をアプリで代替
 - アニメーション表示
@@ -230,15 +195,17 @@ monopory_support_app/
 
 ---
 
-## 🔑 重要な実装ポイント
+## 重要な実装ポイント
 
 ### 1. 状態管理とプレイヤー識別
 
 | 項目 | 実装方法 | 目的 |
 |------|----------|------|
-| **自分の特定** | `localStorage` に `playerId` 保存 | リロード後も「自分」として復帰 |
-| **ホスト判定** | `localStorage` に `isHost` 保存 | 権限制御（銀行操作など） |
-| **銀行の定義** | 特殊なプレイヤー扱い | ホストのみ操作可、全員が送金先として選択可 |
+| **自分の特定** | `sessionStorage` に `playerId` 保存 | タブ単位でプレイヤー識別 |
+| **ホスト判定** | `sessionStorage` に `isHost` 保存 | 権限制御（銀行操作など） |
+| **銀行の定義** | `sender_player_id` が NULL | ホストのみ操作可 |
+
+**注意**: `localStorage` ではなく `sessionStorage` を使用（タブ単位の分離）。
 
 ### 2. ActionCableイベント設計
 
@@ -247,84 +214,125 @@ monopory_support_app/
 | `PLAYER_ADDED` | プレイヤー参加時 | `{ type, all_players }` |
 | `PLAYER_REMOVED` | 一般プレイヤー退出時 | `{ type, all_players }` |
 | `GAME_DELETED` | ホスト退出時 | `{ type, message }` |
-| `MONEY_TRANSFERRED` | 送金実行時（未実装） | `{ type, all_players, transaction }` |
+| `GAME_STARTED` | ゲーム開始時 | `{ type, game, players }` |
+| `MONEY_TRANSFERRED` | 送金実行時 | `{ type, all_players, log }` |
 
-### 3. クリーンアップ戦略 ✅実装済み
+### 3. クリーンアップ戦略
 
-**問題**: ブラウザを閉じても `players` レコードが残り、リストに幽霊プレイヤーが表示される
+- 明示的な「戻る」ボタンでのみ `cleanupPlayer()` を呼び出し
+- `beforeunload` は使用しない（リロード時にsessionStorageが消える問題を防止）
+- タブ閉じ時のクリーンアップはサーバーサイド（ActionCable disconnect）で対応予定
 
-**解決策**（実装済み）:
-1. ✅ **`usePlayerCleanup` フック** で画面遷移・ブラウザクローズを検知
-2. ✅ `beforeunload` イベントで `navigator.sendBeacon()` により `DELETE /api/players/:id` を実行
-3. ✅ Rails側で「ホストなら `game.destroy`、プレイヤーなら `player.destroy`」を判定
-4. ✅ ActionCableで全員に状態変更を通知（`GAME_DELETED`, `PLAYER_REMOVED`）
+### 4. join_token の安定性
+
+- `generate_join_token` は `before_validation` で実行
+- `return if join_token.present?` により、`game.update` 時にトークンが変わらないことを保証
 
 ---
 
-## 📁 API エンドポイント一覧
+## API エンドポイント一覧
 
 ### Games
 
 | メソッド | パス | 説明 | 実装状況 |
 |---------|------|------|---------|
-| GET | `/api/games` | 全ゲーム取得 | ✅ |
-| POST | `/api/games` | ゲーム作成 | ✅ |
-| GET | `/api/games/:join_token` | ゲーム詳細取得 | ✅ |
-| DELETE | `/api/games/:id` | ゲーム削除 | ✅ |
+| GET | `/api/games` | 全ゲーム取得 | 実装済み |
+| POST | `/api/games` | ゲーム作成 | 実装済み |
+| GET | `/api/games/:join_token` | ゲーム詳細取得 | 実装済み |
+| DELETE | `/api/games/:id` | ゲーム削除 | 実装済み |
+| POST | `/api/games/:join_token/start` | ゲーム開始 | 実装済み |
 
 ### Players
 
 | メソッド | パス | 説明 | 実装状況 |
 |---------|------|------|---------|
-| GET | `/api/games/:join_token/players` | ゲーム内プレイヤーリスト | ✅ |
-| POST | `/api/players` | プレイヤー作成 | ✅ |
-| DELETE | `/api/players/:id` | プレイヤー削除（ホスト時はゲーム削除） | ✅ |
+| GET | `/api/games/:join_token/players` | ゲーム内プレイヤーリスト | 実装済み |
+| POST | `/api/players` | プレイヤー作成（ゲーム開始後は不可） | 実装済み |
+| PUT | `/api/players/:id` | プレイヤー更新 | 実装済み |
+| DELETE | `/api/players/:id` | プレイヤー削除（ホスト時はゲーム削除） | 実装済み |
 
-### Transactions（未実装）
+### Logs (送金)
 
 | メソッド | パス | 説明 | 実装状況 |
 |---------|------|------|---------|
-| GET | `/api/games/:join_token/transactions` | 送金履歴取得 | ❌ |
-| POST | `/api/transactions` | 送金実行 | ❌ |
+| GET | `/api/games/:game_join_token/logs` | 送金履歴取得 | 実装済み |
+| POST | `/api/games/:game_join_token/logs` | 送金実行（1対多対応） | 実装済み |
 
 ---
 
-## 🛠️ 次のステップ（優先順位順）
+## TypeScript型定義
+
+```typescript
+// front/src/types/game.ts
+
+export interface Player {
+  id: number;
+  name: string;
+  color: string;
+  is_host: boolean;
+  money: number;
+}
+
+export interface LogReceiver {
+  player: Pick<Player, "id" | "name" | "color">;
+  amount: number;
+}
+
+export interface TransactionLog {
+  id: number;
+  amount: number;
+  sender: Pick<Player, "id" | "name" | "color"> | null;
+  receivers: LogReceiver[];
+  created_at: string;
+}
+
+export interface GameEvent {
+  type: "PLAYER_ADDED" | "PLAYER_REMOVED" | "GAME_DELETED" | "GAME_STARTED" | "MONEY_TRANSFERRED";
+  player?: Player;
+  all_players: Player[];
+  message?: string;
+  log?: TransactionLog;
+}
+```
+
+---
+
+## 次のステップ（優先順位順）
 
 ### 優先度 高
 
-1. **PlayScreen（送金画面）の実装**
-   - ファイル: `front/src/pages/games/started/PlayScreen.tsx`
-   - 役割: 送金フォーム + 所持金表示
+1. **タブ閉じ時のサーバーサイドクリーンアップ**
+   - ActionCable disconnect で幽霊プレイヤーを削除
 
-2. **localStorage復元機能**
-   - 役割: リロード時に `playerId` から自動復帰
+2. **ゲーム終了機能**
+   - ホストがゲームを終了 → 結果画面表示
 
 ### 優先度 中
 
-3. **Transactionモデル・コントローラー作成**
-   - 役割: 送金ロジック + ActionCable通知
+3. **ホスト交代機能**
+   - 現ホストが次ホストを指定
 
-4. **初期所持金設定機能**
-   - 役割: ホストが開始前に金額を一括設定
+4. **送金の取り消し・修正機能**
+   - 誤送金の修正対応
 
 ### 優先度 低
 
-5. **ホスト交代機能**
-   - 役割: 現ホストが次ホストを指定
+5. **フェーズ3: ルーレット機能**
+   - サイコロ・イベント抽選
 
 ---
 
-## 🔐 セキュリティ・注意事項
+## セキュリティ・注意事項
 
 1. **CORS設定**: Rails側で `config/initializers/cors.rb` を設定済みか確認
-2. **join_tokenの安全性**: 8文字のbase58は十分だが、ゲーム削除後はトークン再利用不可にする
+2. **join_tokenの安全性**: 8文字のbase58、`before_validation` で生成（既存時はスキップ）
 3. **プレイヤー削除の認証**: 現状、誰でも他人のIDで削除可能 → セッション管理が必要（将来的に）
 4. **ActionCableの接続管理**: 複数タブ開いた場合の挙動を考慮
+5. **ゲーム開始後の参加制限**: `players_controller#create` でゲームが `waiting` 状態かチェック
 
 ---
 
-## 💡 開発Tips
+## 開発Tips
 
 ### ローカル開発環境
 
@@ -346,10 +354,6 @@ docker-compose exec web rails c
 
 # マイグレーション
 docker-compose exec web rails db:migrate
-
-# Reactコンポーネント作成
-cd front/src/pages/games/setting
-touch NewComponent.tsx
 ```
 
 ### デバッグポイント
@@ -357,25 +361,13 @@ touch NewComponent.tsx
 - **ActionCableが繋がらない**: `actionCable.ts` の接続URLを確認
 - **プレイヤーリストが更新されない**: ブラウザコンソールで `GameChannel` のイベント受信を確認
 - **QRコードが表示されない**: `QrCodeModal.tsx` のURL生成ロジックを確認
+- **join_tokenが変わる**: `game.rb` の `generate_join_token` に `return if join_token.present?` があるか確認
 
 ---
 
-## 📚 参考リンク
+**最終更新**: 2026-01-31
 
-- [Rails ActionCable ガイド](https://guides.rubyonrails.org/action_cable_overview.html)
-- [React Router v6 ドキュメント](https://reactrouter.com/en/main)
-- [TailwindCSS + DaisyUI](https://daisyui.com/)
-
----
-
-**最終更新**: 2026-01-30
-
-**現在のフェーズ**: フェーズ1（初期設定）完了 ✅
-- ゲーム作成・参加機能
-- プレイヤーリスト同期
-- **退出処理（クリーンアップ）実装完了** 🎉
-  - `usePlayerCleanup` フック
-  - ホスト退出時のゲーム削除
-  - ActionCableイベント通知
-
-**次のフェーズ**: フェーズ2（送金管理）実装開始
+**現在のフェーズ**: フェーズ2（送金管理）完了
+- フェーズ1: 初期設定（ゲーム作成・参加・同期・退出）完了
+- フェーズ2: 送金管理（1対多送金・銀行機能・履歴表示）完了
+- フェーズ3: ルーレット機能（構想段階）
