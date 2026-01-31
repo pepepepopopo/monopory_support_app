@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import GameConsumer from "../../../utils/actionCable";
 import type { GameEvent, Player, TransactionLog } from "../../../types/game";
 
@@ -9,6 +9,7 @@ const QUICK_AMOUNTS = [1, 5, 10, 50, 100, 200, 500];
 
 const PlayScreen = () => {
   const { joinToken } = useParams<{ joinToken: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('game');
   const [players, setPlayers] = useState<Player[]>([]);
   const [logs, setLogs] = useState<TransactionLog[]>([]);
@@ -64,6 +65,9 @@ const PlayScreen = () => {
             if (data.log) {
               setLogs(prev => [data.log!, ...prev]);
             }
+          }
+          if (data.type === "GAME_FINISHED") {
+            navigate(`/games/${joinToken}/result`);
           }
         },
       }
@@ -123,6 +127,23 @@ const PlayScreen = () => {
       alert("送金に失敗しました");
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleFinishGame = async () => {
+    if (!confirm("ゲームを終了しますか？")) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/games/${joinToken}/finish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        throw new Error("ゲーム終了に失敗しました");
+      }
+    } catch (error) {
+      console.error("ゲーム終了エラー:", error);
+      alert("ゲーム終了に失敗しました");
     }
   };
 
@@ -299,6 +320,17 @@ const PlayScreen = () => {
                   </li>
                 ))}
               </ul>
+
+              {/* ゲーム終了ボタン（ホストのみ） */}
+              {isHost && (
+                <button
+                  type="button"
+                  className="btn btn-block btn-error btn-outline"
+                  onClick={handleFinishGame}
+                >
+                  ゲームを終了する
+                </button>
+              )}
             </div>
           ) : (
             /* 取引履歴タブ */

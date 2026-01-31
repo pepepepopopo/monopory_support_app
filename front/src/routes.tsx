@@ -5,6 +5,7 @@ import NewGame from './pages/games/setting/NewGame.tsx';
 import StartSettingGame from './pages/games/setting/StartSettingGame.tsx';
 import GameJoin from './pages/games/setting/GameJoin.tsx';
 import PlayScreen from './pages/games/started/ PlayScreen.tsx';
+import ResultScreen from './pages/games/started/ResultScreen.tsx';
 
 export const routes = [
   {
@@ -23,6 +24,7 @@ export const routes = [
               { path: "join", Component: GameJoin },
               { path: "startSetting", Component: StartSettingGame },
               { path: "play", Component: PlayScreen },
+              { path: "result", Component: ResultScreen },
             ]
           }
         ]
