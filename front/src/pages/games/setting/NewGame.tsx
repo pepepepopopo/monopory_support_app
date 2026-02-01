@@ -28,8 +28,7 @@ const NewGame = () => {
       sessionStorage.setItem("isHost", "true");
 
       navigate(`/games/${data.game.join_token}/startSetting`);
-    }catch(error){
-      console.error("ゲームを開始できませんでした", error)
+    }catch{
       alert("ゲームの作成に失敗しました")
     }finally{
       setIsLoading(false);

@@ -28,8 +28,8 @@ const GameJoin = () =>{
         if (data.game?.status !== "waiting") {
           setGameStarted(true);
         }
-      } catch (error) {
-        console.error("ゲーム情報の取得に失敗しました", error);
+      } catch {
+        // ignore
       }
     };
 
@@ -38,8 +38,8 @@ const GameJoin = () =>{
         const response = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/players`);
         const data = await response.json();
         setPlayers(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("プレイヤーの取得に失敗しました", error);
+      } catch {
+        // ignore
       }
     };
 
@@ -65,9 +65,8 @@ const GameJoin = () =>{
       sessionStorage.setItem("playerId", playerData.id.toString());
       sessionStorage.setItem("isHost", "false")
       navigate(`/games/${data.game.join_token}/startSetting`);
-    }catch(error){
+    }catch{
       alert(`ゲームに参加できませんでした\nゲームが開始されていないことを確認してください`)
-      console.error(error)
     }finally{
       setIsLoading(false);
     }

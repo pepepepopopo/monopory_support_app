@@ -32,8 +32,8 @@ const usePlayerCleanup = () => {
         sessionStorage.removeItem("playerId");
         sessionStorage.removeItem("isHost");
       }
-    } catch (error) {
-      console.error("プレイヤー削除に失敗しました", error);
+    } catch {
+      // ignore
     }
   }, []);
 

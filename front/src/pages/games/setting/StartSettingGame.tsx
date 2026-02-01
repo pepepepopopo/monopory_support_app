@@ -56,8 +56,8 @@ const StartSettingGame = () => {
           navigate("/games", { replace: true });
           return;
         }
-      } catch (error) {
-        console.error("ゲーム情報の取得に失敗しました", error);
+      } catch {
+        // ignore
       }
     };
 
@@ -114,8 +114,7 @@ const StartSettingGame = () => {
       }
 
       navigate(`/games/${joinToken}/play`);
-    } catch (error) {
-      console.error("ゲーム開始エラー:", error);
+    } catch {
       alert("ゲームの開始に失敗しました");
     }
   }

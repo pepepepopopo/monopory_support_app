@@ -10,7 +10,6 @@ const JoinGameModal = () => {
     e.preventDefault();
     const trimmedJoinToken = inputJoinToken.trim();
     const data = await JoinGame(trimmedJoinToken)
-    console.log(data)
     if(data?.game?.join_token){
       navigate(`/games/${data.game.join_token}/join`);
     }
