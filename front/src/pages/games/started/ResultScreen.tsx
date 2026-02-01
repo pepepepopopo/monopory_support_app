@@ -12,7 +12,7 @@ const ResultScreen = () => {
 
     const fetchPlayers = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/players`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/players`);
         const data = await res.json();
         if (Array.isArray(data)) {
           setPlayers([...data].sort((a, b) => b.money - a.money));

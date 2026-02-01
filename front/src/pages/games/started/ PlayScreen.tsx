@@ -31,7 +31,7 @@ const PlayScreen = () => {
     // プレイヤー一覧取得
     const fetchPlayers = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/players`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/players`);
         const data = await res.json();
         if (Array.isArray(data)) setPlayers(data);
       } catch {
@@ -42,7 +42,7 @@ const PlayScreen = () => {
     // 取引履歴取得
     const fetchLogs = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/logs`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/logs`);
         const data = await res.json();
         if (Array.isArray(data)) setLogs(data);
       } catch {
@@ -102,7 +102,7 @@ const PlayScreen = () => {
 
     setIsSending(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/logs`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/logs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -133,7 +133,7 @@ const PlayScreen = () => {
     if (!confirm("ゲームを終了しますか？")) return;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/finish`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/finish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
