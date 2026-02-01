@@ -17,8 +17,8 @@ const ResultScreen = () => {
         if (Array.isArray(data)) {
           setPlayers([...data].sort((a, b) => b.money - a.money));
         }
-      } catch (error) {
-        console.error("プレイヤー取得失敗", error);
+      } catch {
+        // ignore
       }
     };
 

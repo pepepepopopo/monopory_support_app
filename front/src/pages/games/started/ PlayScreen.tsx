@@ -34,8 +34,8 @@ const PlayScreen = () => {
         const res = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/players`);
         const data = await res.json();
         if (Array.isArray(data)) setPlayers(data);
-      } catch (error) {
-        console.error("プレイヤー取得失敗", error);
+      } catch {
+        // ignore
       }
     };
 
@@ -45,8 +45,8 @@ const PlayScreen = () => {
         const res = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/logs`);
         const data = await res.json();
         if (Array.isArray(data)) setLogs(data);
-      } catch (error) {
-        console.error("取引履歴取得失敗", error);
+      } catch {
+        // ignore
       }
     };
 
@@ -122,8 +122,7 @@ const PlayScreen = () => {
       setSelectedReceivers([]);
       setAmount(0);
       setFromBank(false);
-    } catch (error) {
-      console.error("送金エラー:", error);
+    } catch {
       alert("送金に失敗しました");
     } finally {
       setIsSending(false);
@@ -141,8 +140,7 @@ const PlayScreen = () => {
       if (!res.ok) {
         throw new Error("ゲーム終了に失敗しました");
       }
-    } catch (error) {
-      console.error("ゲーム終了エラー:", error);
+    } catch {
       alert("ゲーム終了に失敗しました");
     }
   };
