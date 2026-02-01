@@ -20,7 +20,7 @@ const usePlayerCleanup = () => {
     if (!playerId) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/players/${playerId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASEURL}players/${playerId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

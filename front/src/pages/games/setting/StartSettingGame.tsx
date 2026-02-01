@@ -27,7 +27,7 @@ const StartSettingGame = () => {
     const checkGameAndPlayers = async () => {
       try {
         // ゲームのステータスを確認
-        const gameResponse = await fetch(`http://localhost:3000/api/games/${joinToken}`);
+        const gameResponse = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}`);
         if (!gameResponse.ok) {
           // ゲームが存在しない（削除された等）
           sessionStorage.removeItem("playerId");
@@ -42,7 +42,7 @@ const StartSettingGame = () => {
         }
 
         // プレイヤー一覧を取得
-        const playersResponse = await fetch(`http://localhost:3000/api/games/${joinToken}/players`);
+        const playersResponse = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/players`);
         const playersData = await playersResponse.json();
         const playersList = Array.isArray(playersData) ? playersData : [];
         setPlayers(playersList);
@@ -101,7 +101,7 @@ const StartSettingGame = () => {
 
     try {
       // 全プレイヤーの初期資金を設定
-      const response = await fetch(`http://localhost:3000/api/games/${joinToken}/start`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/start`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
