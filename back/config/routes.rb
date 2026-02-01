@@ -9,6 +9,6 @@ Rails.application.routes.draw do
         post :finish
       end
     end
-    resources :players, only: [:index, :create, :update, :destroy]
+    resources :players, only: [:create, :update, :destroy]
   end
 end
