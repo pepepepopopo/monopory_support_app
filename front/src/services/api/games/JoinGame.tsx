@@ -1,5 +1,5 @@
 const JoinGame = async (join_token: string) => {
-  const url = `${import.meta.env.VITE_API_BASEURL}games/${join_token}`;
+  const url = `${import.meta.env.VITE_API_BASE_URL}games/${join_token}`;
   const response = await fetch(url, {
     method: 'GET',
     headers: {

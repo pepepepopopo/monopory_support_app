@@ -23,7 +23,7 @@ const GameJoin = () =>{
     // ゲームのステータスを確認
     const checkGameStatus = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}`);
         const data = await response.json();
         if (data.game?.status !== "waiting") {
           setGameStarted(true);
@@ -35,7 +35,7 @@ const GameJoin = () =>{
 
     const fetchInitialPlayers = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASEURL}games/${joinToken}/players`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/players`);
         const data = await response.json();
         setPlayers(Array.isArray(data) ? data : []);
       } catch {

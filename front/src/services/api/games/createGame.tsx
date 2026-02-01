@@ -1,5 +1,5 @@
 const CreateGame = async (startMoney: number) => {
-  const url = `${import.meta.env.VITE_API_BASEURL}games`;
+  const url = `${import.meta.env.VITE_API_BASE_URL}games`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
