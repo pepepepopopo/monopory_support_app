@@ -66,7 +66,10 @@ const StartSettingGame = () => {
     const subscription = GameConsumer.subscriptions.create(
       { channel: "GameChannel", game_id:joinToken },
       {
-        connected() {},
+        connected() {
+          // 購読確立前に発生したイベントの取りこぼしを補完
+          checkGameAndPlayers();
+        },
         disconnected() {},
         rejected() {},
         received(data: GameEvent){
