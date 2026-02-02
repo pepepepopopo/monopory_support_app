@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router";
 import CreateGame from '../../../services/api/games/createGame';
 import PlayerColor from "../../../utils/PlayerColor";
 import CreatePlayer from "../../../services/api/player/createPlayer";
+import { setToken } from "../../../utils/auth";
 
 const NewGame = () => {
-  const [ isHost, _setIsHost ] = useState(true);
   const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   const [ isLoading, setIsLoading ] = useState(false);
@@ -22,10 +22,11 @@ const NewGame = () => {
 
       const data = await CreateGame(15000);
       const gameId = data.game.id
-      const playerData = await CreatePlayer(gameId, name, selectedColor, isHost);
+      const result = await CreatePlayer(gameId, name, selectedColor);
 
-      sessionStorage.setItem("playerId", playerData.id.toString());
+      sessionStorage.setItem("playerId", result.player.id.toString());
       sessionStorage.setItem("isHost", "true");
+      setToken(result.token);
 
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch{

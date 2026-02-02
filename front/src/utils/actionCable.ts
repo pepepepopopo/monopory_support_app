@@ -1,7 +1,7 @@
-import { createConsumer, Consumer } from "@rails/actioncable";
+import { createConsumer, type Consumer } from "@rails/actioncable";
 
 const API_WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000/cable";
 
-const GameConsumer: Consumer = createConsumer(API_WS_URL);
-
-export default GameConsumer;
+export function getGameConsumer(token: string): Consumer {
+  return createConsumer(`${API_WS_URL}?token=${token}`);
+}

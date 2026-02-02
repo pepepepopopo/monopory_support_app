@@ -1,8 +1,6 @@
 class Api::GamesController < ApplicationController
+  before_action :authenticate_player!, only: [:start, :finish, :destroy]
   before_action :set_game, only: [:show]
-  def index
-    render json: { status: 200, games: Game.all }
-  end
 
   def show
     render json: { game: @game}
@@ -18,7 +16,12 @@ class Api::GamesController < ApplicationController
   end
 
   def destroy
-    game = Game.find(params[:id])
+    game = Game.find_by!(join_token: params[:join_token])
+
+    unless current_player.is_host && current_player.game_id == game.id
+      render json: { error: "ホストのみがゲームを削除できます" }, status: :forbidden
+      return
+    end
 
     if game.destroy
       render json: { status:200, game:game }
@@ -30,6 +33,11 @@ class Api::GamesController < ApplicationController
   def start
     game = Game.find_by!(join_token: params[:join_token])
 
+    unless current_player.is_host && current_player.game_id == game.id
+      render json: { error: "ホストのみがゲームを開始できます" }, status: :forbidden
+      return
+    end
+
     unless game.waiting?
       render json: { status: 400, message: "ゲームは既に開始されています" }, status: :bad_request
       return
@@ -37,13 +45,9 @@ class Api::GamesController < ApplicationController
 
     start_money = params[:start_money] || game.start_money
 
-    # 全プレイヤーの初期資金を設定
     game.players.update_all(money: start_money)
-
-    # ゲームのステータスをplayingに更新
     game.update(start_money: start_money, status: :playing)
 
-    # 全プレイヤーにゲーム開始を通知
     GameChannel.broadcast_to(game, {
       type: "GAME_STARTED",
       game: game.as_json,
@@ -55,6 +59,11 @@ class Api::GamesController < ApplicationController
 
   def finish
     game = Game.find_by!(join_token: params[:join_token])
+
+    unless current_player.is_host && current_player.game_id == game.id
+      render json: { error: "ホストのみがゲームを終了できます" }, status: :forbidden
+      return
+    end
 
     unless game.playing?
       render json: { status: 400, message: "ゲームはプレイ中ではありません" }, status: :bad_request

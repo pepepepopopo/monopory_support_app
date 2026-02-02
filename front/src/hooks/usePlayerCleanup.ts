@@ -1,4 +1,5 @@
 import { useRef, useCallback } from "react";
+import { getAuthHeaders, removeToken } from "../utils/auth";
 
 /**
  * プレイヤー退出時のクリーンアップ処理を管理するカスタムフック
@@ -24,6 +25,7 @@ const usePlayerCleanup = () => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
       });
 
@@ -31,6 +33,7 @@ const usePlayerCleanup = () => {
         hasCleanedUp.current = true;
         sessionStorage.removeItem("playerId");
         sessionStorage.removeItem("isHost");
+        removeToken();
       }
     } catch {
       // ignore

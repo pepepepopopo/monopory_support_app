@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
+import { removeToken } from "../../../utils/auth";
 import type { Player } from "../../../types/game";
 
 const ResultScreen = () => {
@@ -28,6 +29,7 @@ const ResultScreen = () => {
   const handleBackToTop = () => {
     sessionStorage.removeItem("playerId");
     sessionStorage.removeItem("isHost");
+    removeToken();
     navigate("/");
   };
 
