@@ -4,10 +4,10 @@ import CreatePlayer from "../../../services/api/player/createPlayer";
 import JoinGame from "../../../services/api/games/JoinGame";
 import PlayerColor from "../../../utils/PlayerColor";
 import type { Player } from "../../../types/game";
+import { setToken } from "../../../utils/auth";
 
 
 const GameJoin = () =>{
-  const [ isHost, _setIsHost ] = useState(false);
   const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   const [ isLoading, setIsLoading ] = useState(false);
@@ -61,9 +61,10 @@ const GameJoin = () =>{
       setIsLoading(true);
       const data = await JoinGame(joinToken);
       const gameId = data.game.id
-      const playerData = await CreatePlayer(gameId, name, selectedColor, isHost);
-      sessionStorage.setItem("playerId", playerData.id.toString());
-      sessionStorage.setItem("isHost", "false")
+      const result = await CreatePlayer(gameId, name, selectedColor);
+      sessionStorage.setItem("playerId", result.player.id.toString());
+      sessionStorage.setItem("isHost", result.player.is_host ? "true" : "false");
+      setToken(result.token);
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch{
       alert(`ゲームに参加できませんでした\nゲームが開始されていないことを確認してください`)

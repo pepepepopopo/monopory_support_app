@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import GameConsumer from "../../../utils/actionCable";
+import { getGameConsumer } from "../../../utils/actionCable";
+import { getToken, getTokenPayload, getAuthHeaders } from "../../../utils/auth";
 import type { GameEvent, Player, TransactionLog } from "../../../types/game";
+import type { Consumer } from "@rails/actioncable";
 
 type TabType = 'game' | 'history';
 
@@ -15,6 +17,7 @@ const PlayScreen = () => {
   const [logs, setLogs] = useState<TransactionLog[]>([]);
   const [isHost, setIsHost] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const consumerRef = useRef<Consumer | null>(null);
 
   // 送金フォーム
   const [fromBank, setFromBank] = useState(false);
@@ -25,8 +28,18 @@ const PlayScreen = () => {
   const myPlayer = players.find(p => p.id === myPlayerId);
 
   useEffect(() => {
-    setIsHost(sessionStorage.getItem("isHost") === "true");
+    const payload = getTokenPayload();
+    if (payload) {
+      setIsHost(payload.is_host);
+    }
+
     if (!joinToken) return;
+
+    const token = getToken();
+    if (!token) {
+      navigate("/games", { replace: true });
+      return;
+    }
 
     // プレイヤー一覧取得
     const fetchPlayers = async () => {
@@ -42,7 +55,9 @@ const PlayScreen = () => {
     // 取引履歴取得
     const fetchLogs = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/logs`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/logs`, {
+          headers: { ...getAuthHeaders() },
+        });
         const data = await res.json();
         if (Array.isArray(data)) setLogs(data);
       } catch {
@@ -53,7 +68,10 @@ const PlayScreen = () => {
     fetchPlayers();
     fetchLogs();
 
-    const subscription = GameConsumer.subscriptions.create(
+    const consumer = getGameConsumer(token);
+    consumerRef.current = consumer;
+
+    const subscription = consumer.subscriptions.create(
       { channel: "GameChannel", game_id: joinToken },
       {
         connected() {},
@@ -75,6 +93,8 @@ const PlayScreen = () => {
 
     return () => {
       subscription.unsubscribe();
+      consumer.disconnect();
+      consumerRef.current = null;
     };
   }, [joinToken]);
 
@@ -104,7 +124,10 @@ const PlayScreen = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/logs`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
         body: JSON.stringify({
           sender_player_id: senderPlayerId,
           receivers: selectedReceivers.map(id => ({
@@ -115,15 +138,16 @@ const PlayScreen = () => {
       });
 
       if (!res.ok) {
-        throw new Error("送金に失敗しました");
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || "送金に失敗しました");
       }
 
       // フォームリセット
       setSelectedReceivers([]);
       setAmount(0);
       setFromBank(false);
-    } catch {
-      alert("送金に失敗しました");
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "送金に失敗しました");
     } finally {
       setIsSending(false);
     }
@@ -135,7 +159,10 @@ const PlayScreen = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/finish`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
       });
       if (!res.ok) {
         throw new Error("ゲーム終了に失敗しました");

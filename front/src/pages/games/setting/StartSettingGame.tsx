@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import CopyToClipboard from "../../../components/button/CopyToClipboard";
 import QrCodeModal from "../../../components/Modal/QrCodeModal";
-import GameConsumer from "../../../utils/actionCable";
+import { getGameConsumer } from "../../../utils/actionCable";
 import usePlayerCleanup from "../../../hooks/usePlayerCleanup";
+import { getToken, getTokenPayload, getAuthHeaders } from "../../../utils/auth";
 import type { GameEvent, Player } from "../../../types/game"
 import type { Subscription } from "@rails/actioncable";
+import type { Consumer } from "@rails/actioncable";
 
 const StartSettingGame = () => {
   const { joinToken } = useParams<{ joinToken: string }>();
@@ -14,22 +16,28 @@ const StartSettingGame = () => {
   const [isHost, setIsHost] = useState(false);
   const isLeavingRef = useRef(false);
   const subscriptionRef = useRef<Subscription | null>(null);
+  const consumerRef = useRef<Consumer | null>(null);
   const navigate = useNavigate();
   const { cleanupPlayer } = usePlayerCleanup();
 
   useEffect(()=> {
-    // sessionStorageからホスト情報を取得
-    const isHostSession = sessionStorage.getItem("isHost") === "true";
-    setIsHost(isHostSession);
+    const payload = getTokenPayload();
+    if (payload) {
+      setIsHost(payload.is_host);
+    }
 
     if (!joinToken) return;
 
+    const token = getToken();
+    if (!token) {
+      navigate("/games", { replace: true });
+      return;
+    }
+
     const checkGameAndPlayers = async () => {
       try {
-        // ゲームのステータスを確認
         const gameResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}`);
         if (!gameResponse.ok) {
-          // ゲームが存在しない（削除された等）
           sessionStorage.removeItem("playerId");
           sessionStorage.removeItem("isHost");
           navigate("/games", { replace: true });
@@ -41,16 +49,13 @@ const StartSettingGame = () => {
           return;
         }
 
-        // プレイヤー一覧を取得
         const playersResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/players`);
         const playersData = await playersResponse.json();
         const playersList = Array.isArray(playersData) ? playersData : [];
         setPlayers(playersList);
 
-        // 自分のプレイヤーが存在するか確認
         const playerId = sessionStorage.getItem("playerId");
         if (playerId && !playersList.some((p: Player) => p.id === Number(playerId))) {
-          // プレイヤーが削除されていた場合
           sessionStorage.removeItem("playerId");
           sessionStorage.removeItem("isHost");
           navigate("/games", { replace: true });
@@ -63,11 +68,13 @@ const StartSettingGame = () => {
 
     checkGameAndPlayers();
 
-    const subscription = GameConsumer.subscriptions.create(
-      { channel: "GameChannel", game_id:joinToken },
+    const consumer = getGameConsumer(token);
+    consumerRef.current = consumer;
+
+    const subscription = consumer.subscriptions.create(
+      { channel: "GameChannel", game_id: joinToken },
       {
         connected() {
-          // 購読確立前に発生したイベントの取りこぼしを補完
           checkGameAndPlayers();
         },
         disconnected() {},
@@ -80,7 +87,6 @@ const StartSettingGame = () => {
           } else if(data.type === "GAME_STARTED"){
             navigate(`/games/${joinToken}/play`, { replace: true });
           } else if(data.type === "GAME_DELETED"){
-            // 自分が退出操作した場合はalertを出さない
             if (!isLeavingRef.current) {
               alert(data.message || "ゲームが終了しました");
               navigate("/games");
@@ -93,6 +99,8 @@ const StartSettingGame = () => {
     return () => {
       subscription.unsubscribe();
       subscriptionRef.current = null;
+      consumer.disconnect();
+      consumerRef.current = null;
     };
   }, [joinToken]);
 
@@ -103,11 +111,11 @@ const StartSettingGame = () => {
     }
 
     try {
-      // 全プレイヤーの初期資金を設定
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/start`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({ start_money: startMoney })
       });
@@ -123,11 +131,11 @@ const StartSettingGame = () => {
   }
 
   const handleBack = async() => {
-    // 自分の退出操作であることをマーク（GAME_DELETEDのalert防止）
     isLeavingRef.current = true;
-    // subscriptionを先に解除してからcleanup
     subscriptionRef.current?.unsubscribe();
     subscriptionRef.current = null;
+    consumerRef.current?.disconnect();
+    consumerRef.current = null;
     await cleanupPlayer();
     navigate("/games");
   }
