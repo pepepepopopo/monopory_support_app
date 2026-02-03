@@ -6,4 +6,5 @@ Disallow: /games/*/play
 Disallow: /games/*/result
 Disallow: /games/*/startSetting
 
-Sitemap: https://monopory-buddy-front.onrender.com/sitemap.xml
+# TODO: ドメイン取得後に URL を更新
+Sitemap: https://manesaku.example.com/sitemap.xml
