@@ -160,7 +160,7 @@ const StartSettingGame = () => {
                 className="input input-bordered"
               />
               <CopyToClipboard text = {joinToken ?? ""} />
-              <QrCodeModal joinUrl= {`$/games/${joinToken}/join`}/>
+              <QrCodeModal joinUrl= {`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/join`}/>
             </div>
           </fieldset>
           {isHost && (
