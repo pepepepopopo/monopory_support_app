@@ -6,6 +6,7 @@ import PlayerColor from "../../../utils/PlayerColor";
 import type { Player } from "../../../types/game";
 import { setToken } from "../../../utils/auth";
 
+const NAME_MAX_LENGTH = 20;
 
 const GameJoin = () =>{
   const [ name, setName ] = useState("");
@@ -49,25 +50,26 @@ const GameJoin = () =>{
 
   const handleStartGame = async() => {
     if (isLoading) return;
+    if (name.trim() === "") {
+      alert("プレイヤー名を入力してください");
+      return;
+    }
+    if (!joinToken) {
+      alert("ゲーム情報が取得できませんでした");
+      return;
+    }
+
+    setIsLoading(true);
     try{
-      if (name.trim() === "") {
-        alert("プレイヤー名を入力してください")
-        return
-      };
-      if (!joinToken) {
-        alert("ゲーム情報が取得できませんでした");
-        return;
-      }
-      setIsLoading(true);
       const data = await JoinGame(joinToken);
       const gameId = data.game.id
-      const result = await CreatePlayer(gameId, name, selectedColor);
+      const result = await CreatePlayer(gameId, name.trim(), selectedColor);
       sessionStorage.setItem("playerId", result.player.id.toString());
       sessionStorage.setItem("isHost", result.player.is_host ? "true" : "false");
       setToken(result.token);
       navigate(`/games/${data.game.join_token}/startSetting`);
-    }catch{
-      alert(`ゲームに参加できませんでした\nゲームが開始されていないことを確認してください`)
+    }catch(e){
+      alert(e instanceof Error ? e.message : "ゲームに参加できませんでした");
     }finally{
       setIsLoading(false);
     }
@@ -106,7 +108,17 @@ const GameJoin = () =>{
           </div>
           <fieldset className="fieldset">
             <legend className="fieldset-legend">プレイヤー名</legend>
-            <input type="text" onChange={(e) => setName(e.target.value)} className="input input-primary" placeholder="名前を入力" />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input input-primary"
+              placeholder="名前を入力"
+              maxLength={NAME_MAX_LENGTH}
+            />
+            <div className="text-xs opacity-60 mt-1">
+              {name.length}/{NAME_MAX_LENGTH}文字
+            </div>
           </fieldset>
         </div>
         <div className="space-y-2">

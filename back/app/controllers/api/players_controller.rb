@@ -37,7 +37,7 @@ class Api::PlayersController < ApplicationController
 
       render json: { player: @player, token: token }, status: :created
     else
-      render json: @player.errors, status: :unprocessable_entity
+      render json: { error: @player.errors.full_messages.first }, status: :unprocessable_entity
     end
   end
 

@@ -8,7 +8,8 @@ const CreatePlayer = async (game_id: string, name: string, color: string) => {
     body: JSON.stringify({ player: { game_id, name, color } })
   });
   if (!response.ok) {
-    throw new Error(`プレイヤー作成失敗: ${response.status}`);
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.error || `プレイヤー作成失敗: ${response.status}`);
   }
   return response.json();
 };
