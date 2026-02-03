@@ -458,12 +458,12 @@ export interface GameEvent {
 - [x] **プレイヤー名のバリデーション**: 1〜20文字、ひらがな/カタカナ/漢字/英数字/スペースのみ - `player.rb`
   - `color`: 16進数カラー形式のみ
   - `money`: 0以上
-  - フロントエンド側でもリアルタイムバリデーション実装 - `NewGame.tsx`, `GameJoin.tsx`
+  - フロントエンドは `maxLength` 属性のみ（バリデーションはバックエンドに委任）
 
 ### MEDIUM
 
 - [ ] **リクエストサイズ制限なし**: `receivers` 配列に大量データ送信可能 → メモリ枯渇
-- [ ] **エラーメッセージの情報漏洩**: `@player.errors` でモデル構造が推測可能
+- [x] **エラーメッセージの情報漏洩**: `@player.errors.full_messages.first` で単一メッセージのみ返却に修正 - `players_controller.rb`
 - [ ] **database.yml にパスワードハードコード**: 開発用だが `password: password` が平文
 - [ ] **ページネーションなし**: `Game.all` で全件返却 → メモリ枯渇
 
