@@ -160,7 +160,7 @@ const StartSettingGame = () => {
                 className="input input-bordered"
               />
               <CopyToClipboard text = {joinToken ?? ""} />
-              <QrCodeModal joinUrl= {`${window.location.origin}/games/${joinToken}/join`}/>
+              <QrCodeModal joinUrl= {`$/games/${joinToken}/join`}/>
             </div>
           </fieldset>
           {isHost && (
