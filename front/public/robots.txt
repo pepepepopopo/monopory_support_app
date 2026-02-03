@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# ゲーム中のページはインデックス不要
+Disallow: /games/*/play
+Disallow: /games/*/result
+Disallow: /games/*/startSetting
+
+Sitemap: https://monopory-buddy-front.onrender.com/sitemap.xml
