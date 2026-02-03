@@ -1,4 +1,6 @@
 class Api::LogsController < ApplicationController
+  class InsufficientBalanceError < StandardError; end
+
   before_action :authenticate_player!
 
   def index
@@ -33,18 +35,11 @@ class Api::LogsController < ApplicationController
       return
     end
 
-    # 送金元の検証
+    # 送金元の検証（認可チェック - ロック前に実施）
     if sender_player_id.present?
       # プレイヤー送金: 送金元が自分自身であることを検証
       unless current_player.id == sender_player_id.to_i
         render json: { error: "他のプレイヤーとして送金することはできません" }, status: :forbidden
-        return
-      end
-
-      sender = game.players.find(sender_player_id)
-      total_amount = amounts.sum
-      if sender.money < total_amount
-        render json: { error: "残高が不足しています" }, status: :bad_request
         return
       end
     else
@@ -56,9 +51,18 @@ class Api::LogsController < ApplicationController
     end
 
     ActiveRecord::Base.transaction do
+      # SELECT FOR UPDATE で関係するプレイヤーをロック（競合状態防止）
+      receiver_ids = receivers.map { |r| r[:player_id] }
+      all_player_ids = sender_player_id.present? ? [sender_player_id, *receiver_ids] : receiver_ids
+      locked_players = game.players.where(id: all_player_ids).lock.index_by(&:id)
+
       if sender_player_id.present?
-        sender = game.players.find(sender_player_id)
-        total_amount = receivers.sum { |r| r[:amount].to_i }
+        sender = locked_players[sender_player_id.to_i]
+        raise ActiveRecord::RecordNotFound, "送金元プレイヤーが見つかりません" unless sender
+        total_amount = amounts.sum
+        if sender.money < total_amount
+          raise InsufficientBalanceError, "残高が不足しています"
+        end
         sender.update!(money: sender.money - total_amount)
       end
 
@@ -68,7 +72,8 @@ class Api::LogsController < ApplicationController
       )
 
       receivers.each do |receiver|
-        player = game.players.find(receiver[:player_id])
+        player = locked_players[receiver[:player_id].to_i]
+        raise ActiveRecord::RecordNotFound, "受取プレイヤーが見つかりません" unless player
         player.update!(money: player.money + receiver[:amount].to_i)
 
         log.log_receivers.create!(
@@ -96,6 +101,8 @@ class Api::LogsController < ApplicationController
 
       render json: { status: 200, log: log.as_json }
     end
+  rescue InsufficientBalanceError => e
+    render json: { error: e.message }, status: :bad_request
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity
   end

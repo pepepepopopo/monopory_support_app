@@ -72,7 +72,9 @@ monopory_support_app/
     │   ├── cable.yml               # ActionCable設定（async アダプタ）
     │   ├── database.yml
     │   ├── routes.rb
-    │   ├── initializers/cors.rb    # CORS設定
+    │   ├── initializers/
+    │   │   ├── cors.rb             # CORS設定
+    │   │   └── rack_attack.rb      # レート制限設定
     │   └── environments/
     │       └── production.rb       # 本番設定（ActionCable origin等）
     ├── lib/
@@ -80,7 +82,7 @@ monopory_support_app/
     └── app/
         ├── models/
         │   ├── game.rb             # has_many :players, :logs, join_token生成, status enum
-        │   ├── player.rb           # belongs_to :game
+        │   ├── player.rb           # belongs_to :game, バリデーション（name, color, money）
         │   ├── log.rb              # 送金履歴（1対多送金対応）
         │   └── log_receiver.rb     # 送金先
         ├── controllers/
@@ -88,7 +90,7 @@ monopory_support_app/
         │   └── api/
         │       ├── games_controller.rb # ゲーム作成・参照 + start/finish/destroy（JWT認証）
         │       ├── players_controller.rb # プレイヤー作成（JWT発行）+ 削除（JWT認証）
-        │       └── logs_controller.rb  # 送金履歴の取得・作成（JWT認証 + sender検証）
+        │       └── logs_controller.rb  # 送金履歴の取得・作成（JWT認証 + sender検証 + SELECT FOR UPDATE）
         └── channels/
             ├── application_cable/
             │   └── connection.rb   # JWT検証（query param `token`）
@@ -397,17 +399,17 @@ export interface GameEvent {
   - ActionCable アダプタを `async` → `redis` に移行
   - マルチワーカー対応（`WEB_CONCURRENCY` を1以上に）
   - Render Redis サービス or 外部Redis（Upstash等）
-- **レート制限**: `rack-attack` gem 導入（DoS防止・ブルートフォース防止）
+- ~~**レート制限**: `rack-attack` gem 導入（DoS防止・ブルートフォース防止）~~ ✅ 完了
 - **エラー監視**: Sentry等の導入
 
-### Phase 4: セキュリティ強化
+### Phase 4: セキュリティ強化 - ✅ 完了
 
-- **認証システム導入**（JWT or セッションベース）
-  - 全APIエンドポイントに認証を要求
-  - `playerId` / `isHost` のクライアント側偽装を防止
-- **送金操作の認証**: リクエスト元プレイヤーの本人確認
-- **ActionCable接続認証**: `ApplicationCable::Connection` で current_user 識別
-- **プレイヤー操作の認可**: `DELETE /api/players/:id` 等で本人確認
+- ~~**認証システム導入**（JWT）~~ ✅ 完了
+  - ~~全APIエンドポイントに認証を要求~~ ✅ 完了
+  - ~~`playerId` / `isHost` のクライアント側偽装を防止~~ ✅ 完了
+- ~~**送金操作の認証**: リクエスト元プレイヤーの本人確認~~ ✅ 完了
+- ~~**ActionCable接続認証**: `ApplicationCable::Connection` で current_user 識別~~ ✅ 完了
+- ~~**プレイヤー操作の認可**: `DELETE /api/players/:id` 等で本人確認~~ ✅ 完了
 
 ### Phase 5: スマホアプリ対応
 
@@ -441,16 +443,22 @@ export interface GameEvent {
 
 ### CRITICAL（認証なしでも即時対応可能）
 
-- [ ] **ゲーム開始時の初期資金バリデーションなし**
-  - `games_controller.rb#start` で `params[:start_money]` に上限なし
-  - 対策: `start_money` に上限バリデーション追加
+- [x] **ゲーム開始時の初期資金バリデーション**: 対応不要（ユーザー判断: 上限は決めなくていい）
 
 ### HIGH
 
-- [ ] **送金の競合状態（Race Condition）**: 残高チェックと更新の間にロックなし → `SELECT FOR UPDATE` 必要
+- [x] **送金の競合状態（Race Condition）対策**: `SELECT FOR UPDATE` でロック取得後に残高チェック・更新を実行 - `logs_controller.rb`
 - [ ] **CSRF保護なし**: Rails APIモードで `protect_from_forgery` が無効
-- [ ] **レート制限なし**: join_tokenブルートフォース、大量ゲーム作成、DoS攻撃が可能
-- [ ] **プレイヤー名のバリデーションなし**: 長さ制限・文字種制限がない（ReactのJSXエスケープでXSSは軽減）
+- [x] **レート制限**: `rack-attack` gem 導入 - `rack_attack.rb`
+  - ゲーム作成: 1分間に5回
+  - プレイヤー作成: 1分間に10回
+  - ゲーム参照（join_token推測防止）: 1分間に30回
+  - 送金: 1分間に60回
+  - 全般API: 1分間に300リクエスト
+- [x] **プレイヤー名のバリデーション**: 1〜20文字、ひらがな/カタカナ/漢字/英数字/スペースのみ - `player.rb`
+  - `color`: 16進数カラー形式のみ
+  - `money`: 0以上
+  - フロントエンド側でもリアルタイムバリデーション実装 - `NewGame.tsx`, `GameJoin.tsx`
 
 ### MEDIUM
 
@@ -461,18 +469,18 @@ export interface GameEvent {
 
 ### 対応優先順位
 
-| 優先度 | 項目 | 対応コスト | 前提条件 |
-|--------|------|-----------|----------|
-| **即時** | Mass Assignment（`permit` から `:money` 削除） | 1行変更 | なし |
-| **即時** | `GET /api/games` の制限 or 削除 | 数行変更 | なし |
-| **即時** | `start_money` のバリデーション（上限設定） | 数行変更 | なし |
-| **即時** | 送金の楽観ロック（`SELECT FOR UPDATE`） | 数行変更 | なし |
-| **高** | レート制限（`rack-attack` gem） | gem追加+設定 | なし |
-| **高** | プレイヤー名バリデーション | モデル変更 | なし |
-| **大規模** | 認証システム導入（JWT） | 全体的な変更 | 設計決定 |
-| **大規模** | 送金・削除の認可チェック | 認証導入後 | JWT |
-| **大規模** | ActionCable接続認証 | 認証導入後 | JWT |
-| **大規模** | Redis移行（マルチプロセス対応） | インフラ変更 | Redis環境 |
+| 優先度 | 項目 | 対応コスト | 状態 |
+|--------|------|-----------|------|
+| **即時** | Mass Assignment（`permit` から `:money` 削除） | 1行変更 | ✅ 完了 |
+| **即時** | `GET /api/games` の制限 or 削除 | 数行変更 | ✅ 完了 |
+| **即時** | `start_money` のバリデーション（上限設定） | 数行変更 | 対応不要（ユーザー判断） |
+| **即時** | 送金の楽観ロック（`SELECT FOR UPDATE`） | 数行変更 | ✅ 完了 |
+| **高** | レート制限（`rack-attack` gem） | gem追加+設定 | ✅ 完了 |
+| **高** | プレイヤー名バリデーション | モデル変更 | ✅ 完了 |
+| **大規模** | 認証システム導入（JWT） | 全体的な変更 | ✅ 完了 |
+| **大規模** | 送金・削除の認可チェック | 認証導入後 | ✅ 完了 |
+| **大規模** | ActionCable接続認証 | 認証導入後 | ✅ 完了 |
+| **大規模** | Redis移行（マルチプロセス対応） | インフラ変更 | 未着手 |
 
 ---
 
@@ -521,11 +529,18 @@ docker-compose exec web rails db:migrate
 
 ---
 
-**最終更新**: 2026-02-01
+**最終更新**: 2026-02-03
 
-**現在のフェーズ**: フェーズ2（送金管理 + ゲーム終了）完了、本番デプロイ済み
-- フェーズ1: 初期設定（ゲーム作成・参加・同期・退出）完了
-- フェーズ2: 送金管理（1対多送金・銀行機能・履歴表示・ゲーム終了）完了
+**現在のフェーズ**: Phase 4（セキュリティ強化）完了
+- フェーズ1: 初期設定（ゲーム作成・参加・同期・退出）✅ 完了
+- フェーズ2: 送金管理（1対多送金・銀行機能・履歴表示・ゲーム終了）✅ 完了
 - Phase 3: Webリリース準備（計画段階）
-- Phase 4: セキュリティ強化（計画段階）
+- Phase 4: セキュリティ強化 ✅ 完了
+  - JWT認証システム導入
+  - Mass Assignment修正
+  - 送金のなりすまし防止
+  - WebSocket認証
+  - 競合状態（Race Condition）対策
+  - レート制限（rack-attack）
+  - プレイヤー名バリデーション
 - Phase 5: スマホアプリ対応（構想段階）

@@ -5,6 +5,8 @@ import PlayerColor from "../../../utils/PlayerColor";
 import CreatePlayer from "../../../services/api/player/createPlayer";
 import { setToken } from "../../../utils/auth";
 
+const NAME_MAX_LENGTH = 20;
+
 const NewGame = () => {
   const [ name, setName ] = useState("");
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
@@ -13,24 +15,24 @@ const NewGame = () => {
 
   const handleStartGame = async() => {
     if (isLoading) return;
-    try{
-      if (name.trim() === "") {
-        alert("プレイヤー名を入力してください")
-        return
-      };
-      setIsLoading(true);
+    if (name.trim() === "") {
+      alert("プレイヤー名を入力してください");
+      return;
+    }
 
+    setIsLoading(true);
+    try{
       const data = await CreateGame(15000);
       const gameId = data.game.id
-      const result = await CreatePlayer(gameId, name, selectedColor);
+      const result = await CreatePlayer(gameId, name.trim(), selectedColor);
 
       sessionStorage.setItem("playerId", result.player.id.toString());
       sessionStorage.setItem("isHost", "true");
       setToken(result.token);
 
       navigate(`/games/${data.game.join_token}/startSetting`);
-    }catch{
-      alert("ゲームの作成に失敗しました")
+    }catch(e){
+      alert(e instanceof Error ? e.message : "ゲームの作成に失敗しました");
     }finally{
       setIsLoading(false);
     }
@@ -52,7 +54,17 @@ const NewGame = () => {
           </div>
           <fieldset className="fieldset">
             <legend className="fieldset-legend">プレイヤー名</legend>
-            <input type="text" onChange={(e) => setName(e.target.value)} className="input input-primary" placeholder="名前を入力" />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input input-primary"
+              placeholder="名前を入力"
+              maxLength={NAME_MAX_LENGTH}
+            />
+            <div className="text-xs opacity-60 mt-1">
+              {name.length}/{NAME_MAX_LENGTH}文字
+            </div>
           </fieldset>
         </div>
         <div className="space-y-2">
