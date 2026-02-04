@@ -6,6 +6,7 @@ import StartSettingGame from './pages/games/setting/StartSettingGame.tsx';
 import GameJoin from './pages/games/setting/GameJoin.tsx';
 import PlayScreen from './pages/games/started/ PlayScreen.tsx';
 import ResultScreen from './pages/games/started/ResultScreen.tsx';
+import NotFound from './pages/NotFound.tsx';
 
 export const routes = [
   {
@@ -29,6 +30,7 @@ export const routes = [
           }
         ]
       },
+      { path: "*", Component: NotFound },
     ],
   },
 ];
