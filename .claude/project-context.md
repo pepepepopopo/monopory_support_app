@@ -1,9 +1,11 @@
-# DigiPoly プロジェクト仕様書
+# マネサク プロジェクト仕様書
 
 ## プロジェクト概要
 
-**アプリ名**: DigiPoly
-**目的**: オフラインのモノポリーをスマホで補助的にプレイするアプリ
+**正式名称**: Money Saku-Saku Support
+**略称**: マネサク
+**キャッチコピー**: 両替、計算、もう終わり！ノンストレスな銀行役を。
+**目的**: オフラインのボードゲーム（モノポリー、人生ゲーム等）をスマホで補助的にプレイするアプリ
 **核となる体験**: 面倒な紙幣のやり取りをスマホで完結させ、全員が常に正確な残高を確認できる
 
 ### 技術スタック
@@ -35,6 +37,12 @@ monopory_support_app/
 ├── front/                          # フロントエンド (Vite + React)
 │   ├── .env                        # 開発環境変数
 │   ├── .env.production             # 本番環境変数
+│   ├── index.html                  # SEO対応（OGP, Twitter Card, GA4）
+│   ├── public/
+│   │   ├── _redirects              # Render SPA対応（/* → /index.html）
+│   │   ├── robots.txt              # 検索エンジン設定
+│   │   ├── sitemap.xml             # サイトマップ
+│   │   └── manesaku_favicon.png    # ファビコン
 │   └── src/
 │       ├── components/             # 再利用可能なコンポーネント
 │       │   ├── button/
@@ -43,11 +51,12 @@ monopory_support_app/
 │       │       ├── JoinGameModal.tsx
 │       │       └── QrCodeModal.tsx
 │       ├── pages/
+│       │   ├── NotFound.tsx        # 404ページ
 │       │   └── games/
 │       │       ├── setting/        # 初期設定画面
 │       │       │   ├── NewGame.tsx          # ゲーム作成
 │       │       │   ├── GameJoin.tsx         # ゲーム参加
-│       │       │   └── StartSettingGame.tsx # プレイヤーリスト + 開始
+│       │       │   └── StartSettingGame.tsx # プレイヤーリスト + 開始 + QRコード
 │       │       └── started/        # ゲーム実行画面
 │       │           ├── PlayScreen.tsx       # 送金管理
 │       │           └── ResultScreen.tsx     # ゲーム結果（順位表示）
@@ -386,21 +395,75 @@ export interface GameEvent {
 - **cache/queue**: `memory_store` / `async`（solid_cache/solid_queue は無効化、別DB不要）
 - **SSL**: `force_ssl = true` + `assume_ssl = true`
 
+### フロントエンド設定
+
+#### SPA ルーティング（Render Static Site）
+
+`front/public/_redirects` でSPAフォールバックを設定:
+```
+/* /index.html 200
+```
+- 全てのパスを `index.html` にリライト
+- React Routerがクライアント側でルーティング処理
+- QRコードからの直接アクセスに対応
+
+#### 404ページ
+
+`front/src/pages/NotFound.tsx` + `routes.tsx` の catch-all ルート:
+```typescript
+{ path: "*", Component: NotFound }
+```
+
+#### SEO対応（index.html）
+
+- **基本タグ**: title, description, keywords
+- **Open Graph**: og:title, og:description, og:site_name（LINE, Facebook共有用）
+- **Twitter Card**: twitter:card, twitter:title, twitter:description
+- **モバイル対応**: theme-color, apple-mobile-web-app-title
+- **検索エンジン**: robots (index, follow), canonical URL（ドメイン取得後に設定）
+
+#### Google Analytics 4
+
+`index.html` に gtag.js を埋め込み:
+- Measurement ID: `G-JHPZGG198B`
+- 初回ページビューは自動計測
+- SPA内のページ遷移は追跡なし（必要になれば追加）
+
+#### QRコード URL生成
+
+`StartSettingGame.tsx` で `window.location.origin` を使用:
+```typescript
+`${window.location.origin}/games/${joinToken}/join`
+```
+- 環境に依存しない（開発/本番/カスタムドメイン全て対応）
+- セキュリティ上も問題なし（読み取り専用値）
+
 ---
 
 ## 将来計画（ロードマップ）
 
-### Phase 3: Webリリース準備
+### Phase 3: Webリリース準備 🔄 進行中
 
-- **独自ドメイン取得・設定**
-  - `cors.rb` と `production.rb` の origin に新ドメインを追加
-  - SSL証明書（Render自動 or Cloudflare）
-- **Redis導入**
+- ~~**アプリ名変更**: DigiPoly → マネサク (Money Saku-Saku Support)~~ ✅ 完了
+- ~~**SEO対応**: index.html に OGP, Twitter Card, meta tags 追加~~ ✅ 完了
+- ~~**Google Analytics 4 導入**: gtag.js 埋め込み~~ ✅ 完了
+- ~~**SPA ルーティング対応**: `_redirects` ファイルで全パスを index.html にリライト~~ ✅ 完了
+- ~~**404ページ追加**: NotFound.tsx + catch-all ルート~~ ✅ 完了
+- ~~**QRコードURL修正**: `window.location.origin` を使用~~ ✅ 完了
+- ~~**独自ドメイン取得・設定**~~ ✅ 完了
+  - ドメイン: `manesaku.com`
+  - `cors.rb` と `production.rb` の origin に追加済み
+  - `index.html` の canonical URL 設定済み
+  - `sitemap.xml`, `robots.txt` のURL更新済み
+- ~~**LP（ランディングページ）作成**~~ ✅ 完了
+  - Hero + 特徴 + 使い方 + CTA セクション
+  - `Home.tsx` を LP 化
+- **Redis導入**（未着手）
   - ActionCable アダプタを `async` → `redis` に移行
   - マルチワーカー対応（`WEB_CONCURRENCY` を1以上に）
   - Render Redis サービス or 外部Redis（Upstash等）
 - ~~**レート制限**: `rack-attack` gem 導入（DoS防止・ブルートフォース防止）~~ ✅ 完了
-- **エラー監視**: Sentry等の導入
+- **エラー監視**: Sentry等の導入（未着手）
 
 ### Phase 4: セキュリティ強化 - ✅ 完了
 
@@ -489,9 +552,12 @@ export interface GameEvent {
 | トリガー | 変更対象 | 内容 |
 |----------|----------|------|
 | 独自ドメイン取得 | `cors.rb`, `production.rb` | origin に新ドメインを追加 |
+| 独自ドメイン取得 | `front/index.html` | canonical URL のコメント解除 + URL設定 |
+| 独自ドメイン取得 | `front/public/sitemap.xml` | URL を実際のドメインに変更 |
+| 独自ドメイン取得 | `front/public/robots.txt` | Sitemap URL を実際のドメインに変更 |
+| 独自ドメイン取得 | Render Dashboard | 旧URL → 新ドメインへの301リダイレクト設定（推奨） |
 | スマホアプリ対応 | CORS設定 | 新origin追加 or ワイルドカード（認証必須前提） |
 | マルチプロセス化 | `cable.yml`, Gemfile | `redis` アダプタに変更 + `redis` gem 追加 |
-| 認証導入 | 全controller, `sessionStorage` | `sessionStorage` → JWTベースのプレイヤー識別に移行 |
 
 ---
 
@@ -529,12 +595,20 @@ docker-compose exec web rails db:migrate
 
 ---
 
-**最終更新**: 2026-02-03
+**最終更新**: 2026-02-04
 
-**現在のフェーズ**: Phase 4（セキュリティ強化）完了
+**現在のフェーズ**: Phase 3（Webリリース準備）進行中
 - フェーズ1: 初期設定（ゲーム作成・参加・同期・退出）✅ 完了
 - フェーズ2: 送金管理（1対多送金・銀行機能・履歴表示・ゲーム終了）✅ 完了
-- Phase 3: Webリリース準備（計画段階）
+- Phase 3: Webリリース準備 🔄 進行中
+  - アプリ名変更: DigiPoly → マネサク ✅ 完了
+  - SEO対応（OGP, Twitter Card, meta tags）✅ 完了
+  - Google Analytics 4 導入 ✅ 完了
+  - SPA ルーティング対応（_redirects）✅ 完了
+  - 404ページ追加 ✅ 完了
+  - QRコードURL修正（window.location.origin）✅ 完了
+  - 独自ドメイン取得・設定（manesaku.com）✅ 完了
+  - LP（ランディングページ）作成 ✅ 完了
 - Phase 4: セキュリティ強化 ✅ 完了
   - JWT認証システム導入
   - Mass Assignment修正

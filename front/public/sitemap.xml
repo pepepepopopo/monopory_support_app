@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- TODO: ドメイン取得後に URL を更新 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://manesaku.example.com/</loc>
+    <loc>https://manesaku.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://manesaku.example.com/games/new</loc>
+    <loc>https://manesaku.com/games</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

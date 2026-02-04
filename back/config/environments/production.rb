@@ -51,7 +51,9 @@ Rails.application.configure do
 
   # Allow ActionCable WebSocket connections from the frontend origin.
   config.action_cable.allowed_request_origins = [
-    "https://monopory-buddy-front.onrender.com"
+    "https://monopory-buddy-front.onrender.com",
+    "https://manesaku.com",
+    "https://www.manesaku.com"
   ]
 
   # Ignore bad email addresses and do not raise email delivery errors.
@@ -81,10 +83,7 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
+  config.hosts = << 'www.manesaku.com'
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
