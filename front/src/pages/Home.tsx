@@ -6,69 +6,62 @@ function Home() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="text-center py-16 px-4">
-        <h1 className="text-4xl font-bold mb-4 text-primary">マネサク</h1>
+        <h1 className="text-4xl font-bold mb-4 text-primary">マネサク 🎲</h1>
         <p className="text-2xl font-semibold mb-2">両替、計算、もう終わり！</p>
         <p className="text-lg opacity-80 mb-8">ノンストレスな銀行役を。</p>
         <div className="flex flex-col gap-3 max-w-xs mx-auto">
-          <Link to="/games" className="btn btn-primary btn-lg">
+          <Link to="/games" className="btn btn-primary w-full h-16">
             ゲームを始める
           </Link>
           <JoinGameModal />
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-12 px-4 bg-base-200">
-        <h2 className="text-2xl font-bold text-center mb-8">特徴</h2>
-        <div className="grid gap-6 max-w-2xl mx-auto">
-          <div className="card bg-base-100 shadow-md">
-            <div className="card-body">
-              <div className="text-3xl mb-2">💰</div>
-              <h3 className="card-title text-lg">両替不要</h3>
-              <p className="opacity-70">細かいお金の両替作業から解放。タップするだけで送金完了。</p>
-            </div>
-          </div>
-          <div className="card bg-base-100 shadow-md">
-            <div className="card-body">
-              <div className="text-3xl mb-2">📊</div>
-              <h3 className="card-title text-lg">残高が一目瞭然</h3>
-              <p className="opacity-70">全員の資産をリアルタイム表示。「いくら持ってる？」の確認が不要に。</p>
-            </div>
-          </div>
-          <div className="card bg-base-100 shadow-md">
-            <div className="card-body">
-              <div className="text-3xl mb-2">🎮</div>
-              <h3 className="card-title text-lg">ゲームに集中</h3>
-              <p className="opacity-70">計算ミスや数え間違いなし。本来のゲームをもっと楽しめる。</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
-      <section className="py-12 px-4">
-        <h2 className="text-2xl font-bold text-center mb-8">使い方</h2>
-        <div className="max-w-md mx-auto">
-          <ul className="steps steps-vertical w-full">
-            <li className="step step-primary" data-content="1">
-              <div className="text-left ml-4">
-                <p className="font-semibold">ゲームを作成</p>
+      <section className="py-10 px-4 bg-base-200 rounded-xl">
+        <h2 className="text-2xl font-bold text-center mb-6">使い方</h2>
+        <div className="max-w-lg mx-auto space-y-3">
+          {/* Step 1 */}
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body flex-row items-center gap-3 p-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-bold">
+                1
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold">ゲームを作成</h3>
                 <p className="text-sm opacity-70">ホストが「ゲームを始める」をタップ</p>
               </div>
-            </li>
-            <li className="step step-primary" data-content="2">
-              <div className="text-left ml-4">
-                <p className="font-semibold">参加者を招待</p>
+              <div className="text-2xl">🎮</div>
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body flex-row items-center gap-3 p-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-bold">
+                2
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold">参加者を招待</h3>
                 <p className="text-sm opacity-70">QRコードまたは参加コードを共有</p>
               </div>
-            </li>
-            <li className="step step-primary" data-content="3">
-              <div className="text-left ml-4">
-                <p className="font-semibold">ゲーム開始</p>
+              <div className="text-2xl">📱</div>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body flex-row items-center gap-3 p-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-bold">
+                3
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold">ゲーム開始</h3>
                 <p className="text-sm opacity-70">全員揃ったらスタート！送金はタップだけ</p>
               </div>
-            </li>
-          </ul>
+              <div className="text-2xl">🚀</div>
+            </div>
+          </div>
         </div>
       </section>
 
