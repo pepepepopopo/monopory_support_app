@@ -77,6 +77,10 @@ function Home() {
       {/* Footer */}
       <footer className="py-6 px-4 text-center text-sm opacity-60">
         <p>Money Saku-Saku Support</p>
+        <div className="mt-2 space-x-3">
+          <Link to="/privacy" className="link">プライバシーポリシー</Link>
+          <Link to="/terms" className="link">利用規約</Link>
+        </div>
       </footer>
     </div>
   );

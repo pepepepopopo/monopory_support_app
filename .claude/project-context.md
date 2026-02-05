@@ -42,7 +42,8 @@ monopory_support_app/
 │   │   ├── _redirects              # Render SPA対応（/* → /index.html）
 │   │   ├── robots.txt              # 検索エンジン設定
 │   │   ├── sitemap.xml             # サイトマップ
-│   │   └── manesaku_favicon.png    # ファビコン
+│   │   ├── manesaku_favicon.png    # ファビコン（旧）
+│   │   └── manesaku_favicon1.png   # ファビコン（現行）
 │   └── src/
 │       ├── components/             # 再利用可能なコンポーネント
 │       │   ├── button/
@@ -51,7 +52,11 @@ monopory_support_app/
 │       │       ├── JoinGameModal.tsx
 │       │       └── QrCodeModal.tsx
 │       ├── pages/
+│       │   ├── Home.tsx            # LP（Hero + 使い方 + CTA + フッター）
+│       │   ├── HomeLayout.tsx      # ルートレイアウト（lemonadeテーマ, max-w-md）
 │       │   ├── NotFound.tsx        # 404ページ
+│       │   ├── PrivacyPolicy.tsx   # プライバシーポリシー（AdSense対応）
+│       │   ├── Terms.tsx           # 利用規約
 │       │   └── games/
 │       │       ├── setting/        # 初期設定画面
 │       │       │   ├── NewGame.tsx          # ゲーム作成
@@ -414,6 +419,17 @@ export interface GameEvent {
 { path: "*", Component: NotFound }
 ```
 
+#### プライバシーポリシー・利用規約ページ
+
+`routes.tsx` に `HomeLayout` の子ルートとして追加:
+```typescript
+{ path: "privacy", Component: PrivacyPolicy },
+{ path: "terms", Component: Terms },
+```
+- 各ページ下部に「トップに戻る」「相互リンク」を小さく配置（`text-xs opacity-50`）
+- `Home.tsx` フッターにリンク追加
+- `sitemap.xml` に `changefreq: yearly`, `priority: 0.3` で登録
+
 #### SEO対応（index.html）
 
 - **基本タグ**: title, description, keywords
@@ -429,6 +445,20 @@ export interface GameEvent {
 - 初回ページビューは自動計測
 - SPA内のページ遷移は追跡なし（必要になれば追加）
 
+#### Google Search Console
+
+ドメイン所有権をTXTレコードで確認:
+- レコード: `manesaku.com TXT google-site-verification=xf0FBYHkduxLcDGmUMb_yRaMaBTI3s2Zw5u9YfrFXDM`
+- TTL: 3600秒
+
+#### Favicon設定
+
+`index.html` で設定:
+```html
+<link rel="icon" type="image/png" href="/manesaku_favicon1.png" />
+<link rel="apple-touch-icon" href="/manesaku_favicon1.png" />
+```
+
 #### QRコード URL生成
 
 `StartSettingGame.tsx` で `window.location.origin` を使用:
@@ -440,13 +470,129 @@ export interface GameEvent {
 
 ---
 
+## 機能追加計画（MVP拡張）
+
+### 優先度: 高（新機能）
+
+#### 電卓機能
+- **目的**: ゲーム中の金額計算（家賃計算、税金計算等）を画面遷移なしで行う
+- **配置**: PlayScreen のタブ追加 or フローティングボタン
+- **仕様**:
+  - 基本四則演算（+、-、×、÷）
+  - 計算結果をそのまま送金額に反映できるボタン
+  - シンプルなUI（既存の金額入力UIと統一感）
+
+#### ルーレット機能
+- **目的**: プレイヤー順決め、ランダムイベント選択等
+- **仕様**:
+  - 参加プレイヤーからランダム選択（順番決め）
+  - カスタム項目でのルーレット（イベントカード代用等）
+  - アニメーション付き演出
+
+### 優先度: 高（UX改善）
+
+#### フラッシュメッセージ（トースト通知）
+- **目的**: 送金完了・エラー・プレイヤー参加等のフィードバックを画面上に一時表示
+- **仕様**:
+  - 画面上部 or 下部にトースト表示（2〜3秒で自動消去）
+  - 成功（緑）、エラー（赤）、情報（青）の色分け
+  - 表示例: 「¥1,000 を〇〇さんに送金しました」「〇〇さんが参加しました」
+  - daisyUI の `toast` + `alert` コンポーネント活用
+
+#### ロビーでのプレイヤーキック
+- **目的**: 間違って参加した人やいたずら参加者の除外
+- **仕様**:
+  - ホストのみ操作可能
+  - プレイヤー名横にキックボタン表示
+  - 確認ダイアログ付き
+  - キックされた側は「ホストにより退出されました」表示
+
+#### ブラウザバック防止
+- **目的**: ゲーム中の誤操作による離脱防止
+- **仕様**:
+  - PlayScreen で `beforeunload` イベントをリッスン
+  - 「ゲームから退出しますか？」確認ダイアログ
+  - ブラウザの戻るボタン・ページ更新時に発動
+
+### 優先度: 中（新機能）
+
+#### 送金取り消し（Undo）
+- **目的**: 誤送金の即時修正
+- **仕様**:
+  - ホストのみ操作可能
+  - 直近の送金1件を取り消し（金額の逆転処理）
+  - 確認ダイアログ付き
+  - 取り消し履歴をログに記録
+
+#### ゲームテンプレート
+- **目的**: ボードゲームごとの初期設定を簡単に
+- **仕様**:
+  - モノポリー: 初期資金¥15,000
+  - 人生ゲーム: 初期資金¥10,000
+  - カスタム: ユーザー設定
+  - テンプレート選択で `start_money` を自動設定
+
+#### 結果シェア
+- **目的**: ゲーム終了後の結果共有（SNS、LINE等）
+- **仕様**:
+  - 結果画面のスクリーンショット画像生成（html2canvas等）
+  - Web Share API でLINE/Twitter等に共有
+  - 対応していないブラウザではクリップボードコピー
+
+#### 送金メモ
+- **目的**: 送金理由の記録（「家賃」「税金」「給料」等）
+- **仕様**:
+  - 送金時に任意のメモ入力（省略可能）
+  - 履歴タブでメモ表示
+  - DB: `logs` テーブルに `note` カラム追加
+
+### 優先度: 中（UX改善）
+
+#### 残高警告表示
+- **目的**: 残高が少ないプレイヤーへの視覚的警告
+- **仕様**:
+  - 残高が初期資金の10%以下で赤色表示
+  - 残高0で「破産」バッジ表示
+  - プレイヤー一覧で一目で分かるように
+
+#### 最大人数制限
+- **目的**: ゲーム参加者数の上限設定
+- **仕様**:
+  - ホストがゲーム作成時に最大人数を設定（デフォルト8人）
+  - 上限到達時「満員です」表示
+  - DB: `games` テーブルに `max_players` カラム追加
+
+### 優先度: 低（検討中）
+
+#### メモ機能
+- **目的**: 物件所有、借金メモ等のゲーム内記録
+- **仕様**: プレイヤーごとのテキストメモ（ローカル保存）
+
+#### リアクション
+- **目的**: ゲーム中の簡易コミュニケーション
+- **仕様**: プリセットスタンプ（👍😂😱💰等）をWebSocketで送信
+
+#### 効果音・バイブレーション
+- **目的**: ゲーム体験の演出強化
+- **仕様**: 送金時、ゲーム開始/終了時の効果音
+
+#### ゲーム統計
+- **目的**: ゲーム終了後の振り返り
+- **仕様**:
+  - 総送金回数、最大送金額、プレイヤー別の送受金額合計
+  - ゲーム時間（開始〜終了）
+  - ResultScreen に統計タブ追加
+
+---
+
 ## 将来計画（ロードマップ）
 
-### Phase 3: Webリリース準備 🔄 進行中
+### Phase 3: Webリリース準備 ✅ ほぼ完了
 
 - ~~**アプリ名変更**: DigiPoly → マネサク (Money Saku-Saku Support)~~ ✅ 完了
 - ~~**SEO対応**: index.html に OGP, Twitter Card, meta tags 追加~~ ✅ 完了
 - ~~**Google Analytics 4 導入**: gtag.js 埋め込み~~ ✅ 完了
+- ~~**Google Search Console**: ドメイン所有権確認（TXTレコード）~~ ✅ 完了
 - ~~**SPA ルーティング対応**: `_redirects` ファイルで全パスを index.html にリライト~~ ✅ 完了
 - ~~**404ページ追加**: NotFound.tsx + catch-all ルート~~ ✅ 完了
 - ~~**QRコードURL修正**: `window.location.origin` を使用~~ ✅ 完了
@@ -456,14 +602,14 @@ export interface GameEvent {
   - `index.html` の canonical URL 設定済み
   - `sitemap.xml`, `robots.txt` のURL更新済み
 - ~~**LP（ランディングページ）作成**~~ ✅ 完了
-  - Hero + 特徴 + 使い方 + CTA セクション
+  - Hero + 使い方 + CTA セクション
   - `Home.tsx` を LP 化
-- **Redis導入**（未着手）
-  - ActionCable アダプタを `async` → `redis` に移行
-  - マルチワーカー対応（`WEB_CONCURRENCY` を1以上に）
-  - Render Redis サービス or 外部Redis（Upstash等）
+- ~~**Favicon設定**~~ ✅ 完了
+  - `manesaku_favicon1.png`
+  - apple-touch-icon対応
 - ~~**レート制限**: `rack-attack` gem 導入（DoS防止・ブルートフォース防止）~~ ✅ 完了
-- **エラー監視**: Sentry等の導入（未着手）
+- **エラー監視**: Sentry等の導入（任意・未着手）
+- **Redis導入** → Phase 6に移動（広告収益確保後に実施）
 
 ### Phase 4: セキュリティ強化 - ✅ 完了
 
@@ -474,14 +620,190 @@ export interface GameEvent {
 - ~~**ActionCable接続認証**: `ApplicationCable::Connection` で current_user 識別~~ ✅ 完了
 - ~~**プレイヤー操作の認可**: `DELETE /api/players/:id` 等で本人確認~~ ✅ 完了
 
-### Phase 5: スマホアプリ対応
+### Phase 5: 収益化（広告導入）
 
-- **技術選択**
-  - PWA: 既存Webアプリをそのまま活用、ホーム追加で使用（低コスト）
-  - React Native: ネイティブ体験、プッシュ通知対応（高品質）
-- **API共用**: 既存のREST + WebSocket APIをそのまま利用
-- **認証必須**: スマホアプリからのAPI呼び出しにトークン認証（Phase 4が前提）
-- **プッシュ通知**: ゲーム開始・送金通知
+**目的**: アプリの運営費用を賄い、Phase 6以降のインフラ強化・開発費用を確保する
+
+#### 広告プラットフォーム選択
+
+| プラットフォーム | 審査基準 | 収益性 | 実装難度 | 備考 |
+|-----------------|---------|--------|---------|------|
+| **Google AdSense** | コンテンツ量・PV数必要 | 中〜高 | 低 | 最も一般的、React対応ライブラリあり |
+| **A8.net** | 審査なし（即時利用可） | 低〜中 | 低 | アフィリエイト型、ボードゲーム商品紹介向き |
+| **Amazon アソシエイト** | 審査あり | 低〜中 | 低 | モノポリー等の商品リンク設置 |
+| **忍者AdMax** | 審査緩い | 低 | 低 | 国内向け、小規模サイトでも可 |
+
+#### 実装計画
+
+1. **Google AdSense申請準備**
+   - ~~プライバシーポリシーページ追加（必須）~~ ✅ 完了 - `PrivacyPolicy.tsx`
+   - ~~利用規約ページ追加（推奨）~~ ✅ 完了 - `Terms.tsx`
+   - ~~`sitemap.xml` に `/privacy`, `/terms` 追加~~ ✅ 完了
+   - ~~`Home.tsx` フッターにプライバシーポリシー・利用規約リンク追加~~ ✅ 完了
+   - コンテンツページ追加（「遊び方」「よくある質問」等）
+   - 月間PV目安: 1,000〜3,000PV以上で申請
+
+2. **広告配置戦略**
+   - **LP（Home.tsx）**: CTAセクションの下に1枠（レクタングル 300x250）
+   - **ゲーム終了画面（ResultScreen.tsx）**: 結果表示後に1枠
+   - **注意**: ゲームプレイ中（PlayScreen.tsx）は**広告なし**（UX優先）
+
+3. **実装方法（React）**
+   ```tsx
+   // components/AdBanner.tsx
+   useEffect(() => {
+     (window.adsbygoogle = window.adsbygoogle || []).push({});
+   }, []);
+   ```
+
+4. **収益目標**
+   - 初期: 月500〜1,000円（サーバー費用の一部）
+   - 中期: 月3,000〜5,000円（Redis有料プラン費用）
+   - 長期: 月10,000円以上（開発継続費用）
+
+#### 代替収益モデル（検討中）
+
+- **投げ銭/サポート**: Buy Me a Coffee、OFUSE
+- **プレミアム機能**: 広告非表示（月額100〜300円）
+- **スポンサーシップ**: ボードゲームカフェ等との提携
+
+### Phase 6: インフラ強化（Redis導入）
+
+**前提**: Phase 5の広告収益でRedis有料プランの費用を確保後に実施
+
+#### なぜRedisが必要か
+
+| 現状（asyncアダプタ） | Redis導入後 |
+|---------------------|-------------|
+| シングルプロセスのみ | マルチワーカー対応 |
+| 同時接続100〜500程度 | 同時接続1,000〜5,000+ |
+| スケールアウト不可 | 水平スケール可能 |
+| 月$0（無料） | 月$5〜$25（有料） |
+
+#### Redisサービス比較
+
+| サービス | 無料枠 | 有料プラン | 特徴 |
+|---------|--------|-----------|------|
+| **Upstash** | 10,000コマンド/日 | $0.2/100Kコマンド | サーバーレス、従量課金 |
+| **Render Redis** | なし | $7/月〜 | Renderと同一リージョン、低レイテンシ |
+| **Railway** | $5クレジット | 従量課金 | 簡単セットアップ |
+| **Redis Cloud** | 30MB | $5/月〜 | 公式、高機能 |
+
+#### 実装手順
+
+1. **Gemfile追加**
+   ```ruby
+   gem 'redis', '~> 5.0'
+   ```
+
+2. **cable.yml修正**
+   ```yaml
+   production:
+     adapter: redis
+     url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
+     channel_prefix: manesaku_production
+   ```
+
+3. **環境変数設定（Render）**
+   ```
+   REDIS_URL=redis://user:password@host:port
+   ```
+
+4. **WEB_CONCURRENCY設定**
+   ```
+   WEB_CONCURRENCY=2  # 512MB RAMなら2ワーカー推奨
+   ```
+
+5. **動作確認**
+   - 複数タブで同一ゲームに参加
+   - 送金がリアルタイム同期されることを確認
+   - `heroku logs` または Render Logs でエラー確認
+
+#### 費用試算
+
+| 項目 | 月額費用 |
+|------|---------|
+| Render Web Service (Free) | $0 |
+| Render Redis (Starter) | $7 |
+| Upstash（低トラフィック時） | $0〜$3 |
+| **合計** | **$7〜$10/月（約1,000〜1,500円）** |
+
+### Phase 7: スマホアプリ対応
+
+**前提**: Phase 5-6完了後、安定した収益とインフラが確保されてから着手
+
+#### 技術選択比較
+
+| 項目 | PWA | React Native | Flutter |
+|------|-----|--------------|---------|
+| **開発コスト** | 低（既存コード流用） | 中 | 高（Dart学習） |
+| **ストア公開** | 不要 | Apple/Google審査 | Apple/Google審査 |
+| **プッシュ通知** | 制限あり（iOS Safari不完全） | 完全対応 | 完全対応 |
+| **オフライン** | Service Worker | ネイティブ | ネイティブ |
+| **UX品質** | Web相当 | ネイティブ | ネイティブ |
+| **費用** | $0 | Apple $99/年 + Google $25 | 同左 |
+
+#### 推奨アプローチ: 段階的移行
+
+**Step 1: PWA化（低コスト・即時実施可能）**
+- `manifest.json` 追加（アプリ名、アイコン、テーマカラー）
+- Service Worker 追加（オフラインキャッシュ）
+- 「ホーム画面に追加」プロンプト表示
+- 実装工数: 1〜2日
+
+```json
+// public/manifest.json
+{
+  "name": "マネサク",
+  "short_name": "マネサク",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#570df8",
+  "icons": [
+    { "src": "/manesaku_favicon1.png", "sizes": "192x192", "type": "image/png" }
+  ]
+}
+```
+
+**Step 2: React Native（収益安定後）**
+- Expo使用（ネイティブ機能の簡易利用）
+- 既存APIをそのまま利用（REST + WebSocket）
+- プッシュ通知実装（Firebase Cloud Messaging）
+- 実装工数: 2〜4週間
+
+**Step 3: ストア公開**
+- Apple Developer Program: $99/年
+- Google Play Console: $25（一回のみ）
+- 審査対応（プライバシーポリシー、利用規約必須）
+
+#### プッシュ通知設計
+
+| トリガー | 通知内容 | 優先度 |
+|---------|---------|--------|
+| 他プレイヤー参加 | 「〇〇さんが参加しました」 | 中 |
+| ゲーム開始 | 「ゲームが開始されました」 | 高 |
+| 送金受取 | 「〇〇さんから¥1,000受け取り」 | 高 |
+| ホストからの通知 | カスタムメッセージ | 中 |
+
+#### ロードマップまとめ
+
+```
+現在 ──────────────────────────────────────────────────────────────→ 将来
+
+Phase 5          Phase 6          Phase 7
+収益化            Redis導入         スマホアプリ
+(広告導入)        (インフラ強化)
+
+┌─────────┐      ┌─────────┐      ┌─────────┐      ┌─────────┐
+│AdSense  │ ──→  │Upstash/ │ ──→  │PWA化    │ ──→  │React    │
+│申請・導入│      │Render   │      │manifest │      │Native   │
+│         │      │Redis    │      │SW追加   │      │ストア   │
+└─────────┘      └─────────┘      └─────────┘      └─────────┘
+  費用: $0        費用: $7-10/月    費用: $0        費用: $124/年
+  収益: ¥500-     同時接続:         ホーム追加      プッシュ通知
+  1,000/月        1,000+対応        対応            完全対応
+```
 
 ---
 
@@ -543,7 +865,7 @@ export interface GameEvent {
 | **大規模** | 認証システム導入（JWT） | 全体的な変更 | ✅ 完了 |
 | **大規模** | 送金・削除の認可チェック | 認証導入後 | ✅ 完了 |
 | **大規模** | ActionCable接続認証 | 認証導入後 | ✅ 完了 |
-| **大規模** | Redis移行（マルチプロセス対応） | インフラ変更 | 未着手 |
+| **大規模** | Redis移行（マルチプロセス対応） | インフラ変更 | Phase 6で実施予定 |
 
 ---
 
@@ -595,26 +917,52 @@ docker-compose exec web rails db:migrate
 
 ---
 
-**最終更新**: 2026-02-04
+**最終更新**: 2026-02-05
 
-**現在のフェーズ**: Phase 3（Webリリース準備）進行中
-- フェーズ1: 初期設定（ゲーム作成・参加・同期・退出）✅ 完了
-- フェーズ2: 送金管理（1対多送金・銀行機能・履歴表示・ゲーム終了）✅ 完了
-- Phase 3: Webリリース準備 🔄 進行中
-  - アプリ名変更: DigiPoly → マネサク ✅ 完了
-  - SEO対応（OGP, Twitter Card, meta tags）✅ 完了
-  - Google Analytics 4 導入 ✅ 完了
-  - SPA ルーティング対応（_redirects）✅ 完了
-  - 404ページ追加 ✅ 完了
-  - QRコードURL修正（window.location.origin）✅ 完了
-  - 独自ドメイン取得・設定（manesaku.com）✅ 完了
-  - LP（ランディングページ）作成 ✅ 完了
-- Phase 4: セキュリティ強化 ✅ 完了
-  - JWT認証システム導入
-  - Mass Assignment修正
-  - 送金のなりすまし防止
-  - WebSocket認証
-  - 競合状態（Race Condition）対策
-  - レート制限（rack-attack）
-  - プレイヤー名バリデーション
-- Phase 5: スマホアプリ対応（構想段階）
+**現在のフェーズ**: Phase 4 完了 → Phase 5（収益化）準備中
+
+### 完了フェーズ
+
+- **フェーズ1**: 初期設定（ゲーム作成・参加・同期・退出）✅ 完了
+- **フェーズ2**: 送金管理（1対多送金・銀行機能・履歴表示・ゲーム終了）✅ 完了
+- **Phase 3**: Webリリース準備 ✅ ほぼ完了
+  - アプリ名変更: DigiPoly → マネサク ✅
+  - SEO対応（OGP, Twitter Card, meta tags）✅
+  - Google Analytics 4 導入 ✅
+  - Google Search Console 設定 ✅
+  - SPA ルーティング対応（_redirects）✅
+  - 404ページ追加 ✅
+  - QRコードURL修正（window.location.origin）✅
+  - 独自ドメイン取得・設定（manesaku.com）✅
+  - LP（ランディングページ）作成 ✅
+  - Favicon設定 ✅
+  - 残り: エラー監視（Sentry）- 任意
+- **Phase 4**: セキュリティ強化 ✅ 完了
+  - JWT認証システム導入 ✅
+  - Mass Assignment修正 ✅
+  - 送金のなりすまし防止 ✅
+  - WebSocket認証 ✅
+  - 競合状態（Race Condition）対策 ✅
+  - レート制限（rack-attack）✅
+  - プレイヤー名バリデーション ✅
+
+### 今後のロードマップ
+
+- **Phase 5**: 収益化（広告導入）📋 準備中
+  - プライバシーポリシーページ作成（`PrivacyPolicy.tsx`）✅
+  - 利用規約ページ作成（`Terms.tsx`）✅
+  - `sitemap.xml` に `/privacy`, `/terms` 追加 ✅
+  - `Home.tsx` フッターにリンク追加 ✅
+  - Google AdSense申請
+  - 広告配置（LP、ゲーム終了画面）
+  - 目標: 月¥1,000〜3,000の収益確保
+- **Phase 6**: インフラ強化（Redis導入）⏳ Phase 5完了後
+  - Upstash または Render Redis 導入
+  - ActionCable アダプタを `async` → `redis` に移行
+  - マルチワーカー対応（WEB_CONCURRENCY=2）
+  - 費用: 約$7〜10/月（広告収益で賄う）
+- **Phase 7**: スマホアプリ対応 ⏳ Phase 6完了後
+  - Step 1: PWA化（manifest.json, Service Worker）
+  - Step 2: React Native（Expo使用）
+  - Step 3: ストア公開（Apple $99/年, Google $25）
+  - プッシュ通知実装（FCM）

@@ -6,6 +6,8 @@ import StartSettingGame from './pages/games/setting/StartSettingGame.tsx';
 import GameJoin from './pages/games/setting/GameJoin.tsx';
 import PlayScreen from './pages/games/started/ PlayScreen.tsx';
 import ResultScreen from './pages/games/started/ResultScreen.tsx';
+import PrivacyPolicy from './pages/PrivacyPolicy.tsx';
+import Terms from './pages/Terms.tsx';
 import NotFound from './pages/NotFound.tsx';
 
 export const routes = [
@@ -14,6 +16,8 @@ export const routes = [
     Component: HomeLayout,
     children: [
       { index: true, Component: Home },
+      { path: "privacy", Component: PrivacyPolicy },
+      { path: "terms", Component: Terms },
       {
         path: "games",
         Component: NewGameLayout,
