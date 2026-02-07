@@ -648,13 +648,123 @@ export interface GameEvent {
    - **ゲーム終了画面（ResultScreen.tsx）**: 結果表示後に1枠
    - **注意**: ゲームプレイ中（PlayScreen.tsx）は**広告なし**（UX優先）
 
-3. **実装方法（React）**
-   ```tsx
-   // components/AdBanner.tsx
-   useEffect(() => {
-     (window.adsbygoogle = window.adsbygoogle || []).push({});
-   }, []);
+3. **Web広告実装（Google AdSense）**
+
+   **UXフロー（休憩タイム方式）**:
    ```
+   ResultScreen（結果確認）
+        ↓ 「トップに戻る」ボタン押下
+   BreakTime（☕ 休憩タイム + 広告表示）
+        ↓ 「トップへ進む」ボタン押下
+   Home（LP）
+   ```
+   - 結果はすぐ見せる（ストレスなし）
+   - 広告は遷移の「途中休憩」として自然に表示
+   - ゲーム3回につき1回表示（初回ゲームはスキップ）
+
+   **作成ファイル**:
+
+   - `front/src/components/AdBanner.tsx` - AdSenseラッパーコンポーネント
+   ```tsx
+   import { useEffect } from 'react';
+
+   interface AdBannerProps {
+     slot: string;
+     format?: 'auto' | 'rectangle' | 'horizontal' | 'vertical';
+     style?: React.CSSProperties;
+   }
+
+   const AdBanner = ({ slot, format = 'auto', style }: AdBannerProps) => {
+     useEffect(() => {
+       try {
+         (window.adsbygoogle = window.adsbygoogle || []).push({});
+       } catch (e) {
+         console.error('AdSense error:', e);
+       }
+     }, []);
+
+     return (
+       <ins
+         className="adsbygoogle"
+         style={{ display: 'block', ...style }}
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot={slot}
+         data-ad-format={format}
+         data-full-width-responsive="true"
+       />
+     );
+   };
+
+   export default AdBanner;
+   ```
+
+   - `front/src/pages/games/started/BreakTime.tsx` - 休憩タイム画面
+   ```tsx
+   import { useNavigate } from 'react-router';
+   import AdBanner from '../../../components/AdBanner';
+
+   const BreakTime = () => {
+     const navigate = useNavigate();
+     const handleContinue = () => navigate('/');
+
+     return (
+       <div className="min-h-screen flex flex-col items-center justify-center p-4">
+         <h1 className="text-2xl font-bold mb-2">☕ 休憩タイム</h1>
+         <p className="text-sm opacity-60 mb-6">お疲れさまでした！</p>
+         <div className="w-full max-w-sm mb-6">
+           <AdBanner slot="1234567890" format="rectangle" style={{ minHeight: '250px' }} />
+         </div>
+         <button onClick={handleContinue} className="btn btn-primary">トップへ進む</button>
+       </div>
+     );
+   };
+
+   export default BreakTime;
+   ```
+
+   - `front/src/utils/adFrequency.ts` - 広告表示頻度制御
+   ```typescript
+   const AD_FREQUENCY_KEY = 'gameEndCount';
+
+   export const shouldShowAd = (): boolean => {
+     const count = parseInt(sessionStorage.getItem(AD_FREQUENCY_KEY) || '0', 10);
+     const newCount = count + 1;
+     sessionStorage.setItem(AD_FREQUENCY_KEY, String(newCount));
+     // 初回はスキップ、3回ごとに表示
+     return newCount > 1 && newCount % 3 === 0;
+   };
+
+   export const resetAdFrequency = (): void => {
+     sessionStorage.removeItem(AD_FREQUENCY_KEY);
+   };
+   ```
+
+   **修正ファイル**:
+   - `front/index.html` - AdSenseスクリプト追加（`<head>`内）
+   ```html
+   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+   ```
+   - `front/src/routes.tsx` - BreakTimeルート追加
+   ```typescript
+   { path: "games/:joinToken/break", Component: BreakTime }
+   ```
+   - `front/src/pages/games/started/ResultScreen.tsx` - 遷移先変更
+   ```typescript
+   // 変更前: navigate('/')
+   // 変更後:
+   if (shouldShowAd()) {
+     navigate(`/games/${joinToken}/break`);
+   } else {
+     navigate('/');
+   }
+   ```
+
+   **AdSense申請手順**:
+   1. https://adsense.google.com/ でアカウント作成
+   2. サイト（manesaku.com）を登録
+   3. 審査コードを `index.html` に追加（一時的）
+   4. 審査通過後、広告ユニット作成 → `ca-pub-XXX` と `slot` 取得
+   5. コンポーネントに実際の値を設定
 
 4. **収益目標**
    - 初期: 月500〜1,000円（サーバー費用の一部）
@@ -734,50 +844,219 @@ export interface GameEvent {
 
 #### 技術選択比較
 
-| 項目 | PWA | React Native | Flutter |
-|------|-----|--------------|---------|
-| **開発コスト** | 低（既存コード流用） | 中 | 高（Dart学習） |
-| **ストア公開** | 不要 | Apple/Google審査 | Apple/Google審査 |
-| **プッシュ通知** | 制限あり（iOS Safari不完全） | 完全対応 | 完全対応 |
-| **オフライン** | Service Worker | ネイティブ | ネイティブ |
-| **UX品質** | Web相当 | ネイティブ | ネイティブ |
-| **費用** | $0 | Apple $99/年 + Google $25 | 同左 |
+| 項目 | PWA | Capacitor | React Native | Flutter |
+|------|-----|-----------|--------------|---------|
+| **開発コスト** | 極低 | 低（既存コード100%流用） | 中（UI書き直し） | 高（Dart学習） |
+| **コード共有** | 100% | 100%（同一リポジトリ） | 一部（ロジックのみ） | 0%（新規） |
+| **ストア公開** | 不要 | Apple/Google審査 | Apple/Google審査 | Apple/Google審査 |
+| **ネイティブ機能** | 制限あり | プラグインで対応 | 完全対応 | 完全対応 |
+| **広告SDK** | AdSense | AdMob | AdMob | AdMob |
+| **費用** | $0 | Apple $99/年 + Google $25 | 同左 | 同左 |
 
-#### 推奨アプローチ: 段階的移行
+#### 推奨アプローチ: Capacitor（WebViewラッパー）
 
-**Step 1: PWA化（低コスト・即時実施可能）**
-- `manifest.json` 追加（アプリ名、アイコン、テーマカラー）
-- Service Worker 追加（オフラインキャッシュ）
-- 「ホーム画面に追加」プロンプト表示
-- 実装工数: 1〜2日
+**選定理由**:
+- 既存のReact + Viteコードをそのまま使用（学習コスト0）
+- 同一リポジトリで管理可能（front/内にios/, android/追加）
+- Live Update方式で新機能は即時反映（ストア審査不要）
+- AdMobプラグインで広告対応
 
-```json
-// public/manifest.json
-{
-  "name": "マネサク",
-  "short_name": "マネサク",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#570df8",
-  "icons": [
-    { "src": "/manesaku_favicon1.png", "sizes": "192x192", "type": "image/png" }
-  ]
-}
+#### Step 1: Capacitor初期セットアップ
+
+```bash
+cd front
+npm install @capacitor/core @capacitor/cli
+npx cap init "マネサク" "com.manesaku.app"
+npm install @capacitor/ios @capacitor/android
+npx cap add ios
+npx cap add android
 ```
 
-**Step 2: React Native（収益安定後）**
-- Expo使用（ネイティブ機能の簡易利用）
-- 既存APIをそのまま利用（REST + WebSocket）
-- プッシュ通知実装（Firebase Cloud Messaging）
-- 実装工数: 2〜4週間
+**capacitor.config.ts（Live Update方式）**:
+```typescript
+import type { CapacitorConfig } from '@capacitor/cli';
 
-**Step 3: ストア公開**
-- Apple Developer Program: $99/年
-- Google Play Console: $25（一回のみ）
-- 審査対応（プライバシーポリシー、利用規約必須）
+const config: CapacitorConfig = {
+  appId: 'com.manesaku.app',
+  appName: 'マネサク',
+  // Live Update: 常にWeb版を読み込む（新機能即時反映）
+  server: {
+    url: 'https://manesaku.com',
+    cleartext: false
+  },
+  plugins: {
+    SplashScreen: {
+      launchAutoHide: true,
+      androidScaleType: 'CENTER_CROP'
+    }
+  }
+};
 
-#### プッシュ通知設計
+export default config;
+```
+
+**Live Updateのメリット**:
+- Web版を更新するだけでアプリも更新される
+- ストア審査なしで新機能リリース可能
+- 電卓・ルーレット等の新機能追加も即時反映
+- ネイティブ機能（カメラ、通知等）追加時のみストア再提出
+
+#### Step 2: 開発・テスト環境
+
+**Macでのエミュレータ/シミュレータ**:
+```bash
+# iOS（Xcodeインストール済み前提）
+npx cap open ios    # Xcode起動 → シミュレータで実行
+
+# Android（Android Studioインストール済み前提）
+npx cap open android  # Android Studio起動 → エミュレータで実行
+```
+
+**実機テスト**:
+- iOS: Xcodeで開発者アカウント設定 → 実機接続 → Run
+- Android: USBデバッグ有効化 → Android Studio → Run
+
+#### Step 3: 広告実装（AdMob）
+
+```bash
+npm install @capacitor-community/admob
+npx cap sync
+```
+
+**AdMobラッパーコンポーネント（front/src/utils/admob.ts）**:
+```typescript
+import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition } from '@capacitor-community/admob';
+
+export const initializeAdMob = async () => {
+  await AdMob.initialize({
+    requestTrackingAuthorization: true,
+    testingDevices: ['YOUR_TEST_DEVICE_ID'],
+    initializeForTesting: import.meta.env.DEV,
+  });
+};
+
+export const showBannerAd = async () => {
+  const options: BannerAdOptions = {
+    adId: 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY',
+    adSize: BannerAdSize.BANNER,
+    position: BannerAdPosition.BOTTOM_CENTER,
+    margin: 0,
+  };
+  await AdMob.showBanner(options);
+};
+
+export const showInterstitialAd = async () => {
+  await AdMob.prepareInterstitial({
+    adId: 'ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ',
+  });
+  await AdMob.showInterstitial();
+};
+```
+
+**プラットフォーム判定（Web/Native切り替え）**:
+```typescript
+import { Capacitor } from '@capacitor/core';
+
+export const showAd = async () => {
+  if (Capacitor.isNativePlatform()) {
+    // ネイティブアプリ → AdMob
+    await showInterstitialAd();
+  } else {
+    // Web → AdSense（BreakTime画面へ遷移）
+    return 'web';
+  }
+};
+```
+
+#### Step 4: 課金機能（RevenueCat）
+
+**広告非表示オプション**:
+- 100円で24時間広告非表示
+- 月500円で広告完全非表示
+
+```bash
+npm install @revenuecat/purchases-capacitor
+npx cap sync
+```
+
+**RevenueCat設定（front/src/utils/purchases.ts）**:
+```typescript
+import Purchases from '@revenuecat/purchases-capacitor';
+import { Capacitor } from '@capacitor/core';
+
+export const initializePurchases = async () => {
+  if (!Capacitor.isNativePlatform()) return;
+
+  await Purchases.configure({
+    apiKey: Capacitor.getPlatform() === 'ios'
+      ? 'appl_XXXXXXXXXXXXXXXX'
+      : 'goog_XXXXXXXXXXXXXXXX',
+  });
+};
+
+export const purchaseNoAds = async (productId: string) => {
+  try {
+    const { customerInfo } = await Purchases.purchaseProduct({ productId });
+    return customerInfo.entitlements.active['no_ads'] !== undefined;
+  } catch (e) {
+    console.error('Purchase failed:', e);
+    return false;
+  }
+};
+
+export const checkNoAdsActive = async (): Promise<boolean> => {
+  if (!Capacitor.isNativePlatform()) return false;
+
+  const { customerInfo } = await Purchases.getCustomerInfo();
+  return customerInfo.entitlements.active['no_ads'] !== undefined;
+};
+```
+
+**RevenueCatのメリット**:
+- Apple/Google両方の課金を統一API で管理
+- 月$2,500まで無料（それ以上は1%手数料）
+- ダッシュボードで売上・解約率を可視化
+- サブスクリプション管理（更新/キャンセル）自動処理
+
+#### Step 5: ストア公開
+
+**Apple App Store**:
+| 項目 | 内容 |
+|------|------|
+| **費用** | $99/年（Apple Developer Program） |
+| **審査** | 通常1〜3日、初回は長めの場合あり |
+| **必須対応** | プライバシーポリシーURL、アプリ説明、スクリーンショット |
+| **広告関連** | ATT（App Tracking Transparency）対応必須 |
+
+**Google Play Store**:
+| 項目 | 内容 |
+|------|------|
+| **費用** | $25（一回のみ） |
+| **審査** | 通常数時間〜1日 |
+| **新規開発者制限** | 20人×14日間のクローズドテスト必須（2023年11月〜） |
+| **必須対応** | プライバシーポリシーURL、データセーフティ申告 |
+
+**ディレクトリ構成（公開後）**:
+```
+front/
+├── ios/                    # Capacitor iOS プロジェクト
+│   ├── App/
+│   │   ├── App/
+│   │   │   └── Assets.xcassets/  # アプリアイコン
+│   │   └── Podfile
+│   └── ...
+├── android/                # Capacitor Android プロジェクト
+│   ├── app/
+│   │   ├── src/main/
+│   │   │   └── res/        # アプリアイコン・スプラッシュ
+│   │   └── build.gradle
+│   └── ...
+├── capacitor.config.ts     # Capacitor設定
+├── src/                    # 既存のReactコード（変更なし）
+└── ...
+```
+
+#### プッシュ通知設計（Phase 7.5）
 
 | トリガー | 通知内容 | 優先度 |
 |---------|---------|--------|
@@ -786,24 +1065,44 @@ export interface GameEvent {
 | 送金受取 | 「〇〇さんから¥1,000受け取り」 | 高 |
 | ホストからの通知 | カスタムメッセージ | 中 |
 
+```bash
+npm install @capacitor/push-notifications
+npx cap sync
+```
+- Firebase Cloud Messaging（FCM）でiOS/Android統一
+- バックエンドでFCMトークン保存 → イベント発生時にプッシュ送信
+
 #### ロードマップまとめ
 
 ```
-現在 ──────────────────────────────────────────────────────────────→ 将来
+現在 ──────────────────────────────────────────────────────────────────→ 将来
 
-Phase 5          Phase 6          Phase 7
-収益化            Redis導入         スマホアプリ
-(広告導入)        (インフラ強化)
+Phase 5          Phase 6          Phase 7                Phase 7.5
+収益化            Redis導入         スマホアプリ            機能拡張
+(広告導入)        (インフラ強化)     (Capacitor)
 
 ┌─────────┐      ┌─────────┐      ┌─────────┐      ┌─────────┐
-│AdSense  │ ──→  │Upstash/ │ ──→  │PWA化    │ ──→  │React    │
-│申請・導入│      │Render   │      │manifest │      │Native   │
-│         │      │Redis    │      │SW追加   │      │ストア   │
+│AdSense  │ ──→  │Upstash/ │ ──→  │Capacitor│ ──→  │プッシュ │
+│申請・導入│      │Render   │      │+ AdMob  │      │通知     │
+│休憩タイム│      │Redis    │      │+ 課金   │      │+ 電卓   │
 └─────────┘      └─────────┘      └─────────┘      └─────────┘
-  費用: $0        費用: $7-10/月    費用: $0        費用: $124/年
-  収益: ¥500-     同時接続:         ホーム追加      プッシュ通知
-  1,000/月        1,000+対応        対応            完全対応
+  費用: $0        費用: $7-10/月    費用: $124初年度   費用: $99/年
+  収益: ¥500-     同時接続:         ストア公開        機能追加は
+  1,000/月        1,000+対応        Live Update      Web更新で即時
 ```
+
+#### 費用まとめ
+
+| 項目 | 初年度 | 2年目以降 |
+|------|--------|----------|
+| Apple Developer | $99 | $99/年 |
+| Google Play | $25 | $0 |
+| Render Redis（任意） | $84/年 | $84/年 |
+| **合計** | **$208（約31,000円）** | **$183/年（約27,000円）** |
+
+**RevenueCatで回収する場合**:
+- 月500円プラン × 10人 = 5,000円/月 = 60,000円/年
+- Apple/Google手数料（15〜30%）差引後でも年間費用をカバー可能
 
 ---
 
@@ -917,7 +1216,7 @@ docker-compose exec web rails db:migrate
 
 ---
 
-**最終更新**: 2026-02-05
+**最終更新**: 2026-02-07
 
 **現在のフェーズ**: Phase 4 完了 → Phase 5（収益化）準備中
 
@@ -953,16 +1252,24 @@ docker-compose exec web rails db:migrate
   - 利用規約ページ作成（`Terms.tsx`）✅
   - `sitemap.xml` に `/privacy`, `/terms` 追加 ✅
   - `Home.tsx` フッターにリンク追加 ✅
-  - Google AdSense申請
-  - 広告配置（LP、ゲーム終了画面）
+  - Google AdSense申請 ⏳
+  - 広告配置（休憩タイム方式）⏳
+    - `AdBanner.tsx` - AdSenseラッパー
+    - `BreakTime.tsx` - 休憩タイム画面
+    - `adFrequency.ts` - 表示頻度制御（3ゲームに1回）
   - 目標: 月¥1,000〜3,000の収益確保
 - **Phase 6**: インフラ強化（Redis導入）⏳ Phase 5完了後
   - Upstash または Render Redis 導入
   - ActionCable アダプタを `async` → `redis` に移行
   - マルチワーカー対応（WEB_CONCURRENCY=2）
   - 費用: 約$7〜10/月（広告収益で賄う）
-- **Phase 7**: スマホアプリ対応 ⏳ Phase 6完了後
-  - Step 1: PWA化（manifest.json, Service Worker）
-  - Step 2: React Native（Expo使用）
-  - Step 3: ストア公開（Apple $99/年, Google $25）
+- **Phase 7**: スマホアプリ対応（Capacitor）⏳ Phase 6完了後
+  - Capacitor導入（既存React 100%流用）
+  - Live Update方式（Web更新 = アプリ更新）
+  - AdMob広告実装（`@capacitor-community/admob`）
+  - 課金機能（RevenueCat: 広告非表示オプション）
+  - ストア公開（Apple $99/年 + Google $25）
+  - 費用: 初年度$208、2年目以降$183/年
+- **Phase 7.5**: 機能拡張 ⏳ Phase 7完了後
   - プッシュ通知実装（FCM）
+  - 電卓・ルーレット等の新機能（Web更新で即時反映）
