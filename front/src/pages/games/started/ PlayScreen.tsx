@@ -4,6 +4,7 @@ import { getGameConsumer } from "../../../utils/actionCable";
 import { getToken, getTokenPayload, getAuthHeaders } from "../../../utils/auth";
 import type { GameEvent, Player, TransactionLog } from "../../../types/game";
 import type { Consumer } from "@rails/actioncable";
+import Calculator from "../../../components/Calculator/Calculator";
 
 type TabType = 'game' | 'history';
 
@@ -23,6 +24,9 @@ const PlayScreen = () => {
   const [fromBank, setFromBank] = useState(false);
   const [selectedReceivers, setSelectedReceivers] = useState<number[]>([]);
   const [amount, setAmount] = useState(0);
+
+  // 電卓モーダル
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
 
   const myPlayerId = Number(sessionStorage.getItem("playerId"));
   const myPlayer = players.find(p => p.id === myPlayerId);
@@ -279,6 +283,35 @@ const PlayScreen = () => {
                       min="0"
                       placeholder="0"
                     />
+                    <button
+                      type="button"
+                      className="btn btn-square btn-primary"
+                      onClick={() => setIsCalculatorOpen(true)}
+                      aria-label="電卓を開く"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="size-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="4" y="2" width="16" height="20" rx="2" />
+                        <line x1="8" y1="6" x2="16" y2="6" />
+                        <line x1="8" y1="10" x2="8" y2="10.01" />
+                        <line x1="12" y1="10" x2="12" y2="10.01" />
+                        <line x1="16" y1="10" x2="16" y2="10.01" />
+                        <line x1="8" y1="14" x2="8" y2="14.01" />
+                        <line x1="12" y1="14" x2="12" y2="14.01" />
+                        <line x1="16" y1="14" x2="16" y2="14.01" />
+                        <line x1="8" y1="18" x2="8" y2="18.01" />
+                        <line x1="12" y1="18" x2="12" y2="18.01" />
+                        <line x1="16" y1="18" x2="16" y2="18.01" />
+                      </svg>
+                    </button>
                   </div>
                 </fieldset>
 
@@ -402,6 +435,13 @@ const PlayScreen = () => {
           )}
         </div>
       </div>
+
+      {/* 電卓モーダル */}
+      <Calculator
+        isOpen={isCalculatorOpen}
+        onClose={() => setIsCalculatorOpen(false)}
+        onConfirm={(value) => setAmount(value)}
+      />
     </div>
   );
 };
