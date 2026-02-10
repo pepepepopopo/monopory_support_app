@@ -1,9 +1,13 @@
-import { StrictMode } from 'react'
+import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { routes } from "./routes";
-import './index.css'
+import { initializePushNotifications } from "./services/pushNotifications";
+import "./index.css";
+
+// プッシュ通知の初期化（ネイティブアプリのみ）
+initializePushNotifications();
 
 const router = createBrowserRouter(routes);
 
@@ -13,4 +17,4 @@ ReactDOM.createRoot(root).render(
   <StrictMode>
     <RouterProvider router={router} />
   </StrictMode>
-)
+);
