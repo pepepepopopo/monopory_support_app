@@ -10,6 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/cli": "^8.0.2",
+    "@capacitor/core": "^8.0.2",
+    "@capacitor/ios": "^8.0.2",
+    "@capacitor/push-notifications": "^8.0.0",
     "@rails/actioncable": "^8.1.200",
     "@tailwindcss/vite": "^4.1.16",
     "qrcode.react": "^4.2.0",
