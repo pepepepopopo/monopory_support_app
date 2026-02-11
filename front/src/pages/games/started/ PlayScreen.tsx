@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { getGameConsumer } from "../../../utils/actionCable";
 import { getToken, getTokenPayload, getAuthHeaders } from "../../../utils/auth";
+import { useToast } from "../../../hooks/useToast";
 import type { GameEvent, Player, TransactionLog } from "../../../types/game";
 import type { Consumer } from "@rails/actioncable";
 import Calculator from "../../../components/Calculator/Calculator";
@@ -28,6 +29,9 @@ const PlayScreen = () => {
   // 電卓モーダル
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
 
+  const { showToast } = useToast();
+  const showToastRef = useRef(showToast);
+  showToastRef.current = showToast;
   const myPlayerId = Number(sessionStorage.getItem("playerId"));
   const myPlayer = players.find(p => p.id === myPlayerId);
 
@@ -86,6 +90,16 @@ const PlayScreen = () => {
             setPlayers(data.all_players);
             if (data.log) {
               setLogs(prev => [data.log!, ...prev]);
+              // 送金/受金通知
+              const log = data.log;
+              const myId = Number(sessionStorage.getItem("playerId"));
+              const myReceive = log.receivers.find(r => r.player.id === myId);
+              if (myReceive) {
+                const senderName = log.sender?.name ?? "銀行";
+                showToastRef.current(`${senderName}から $${myReceive.amount.toLocaleString()} を受け取りました`, "info");
+              } else if (log.sender?.id === myId) {
+                showToastRef.current(`$${log.amount.toLocaleString()} を送金しました`, "success");
+              }
             }
           }
           if (data.type === "GAME_FINISHED") {
@@ -112,7 +126,7 @@ const PlayScreen = () => {
 
   const handleTransfer = async () => {
     if (selectedReceivers.length === 0 || amount <= 0) {
-      alert("送金先と金額を入力してください");
+      showToast("送金先と金額を入力してください", "error");
       return;
     }
 
@@ -120,7 +134,7 @@ const PlayScreen = () => {
 
     // 残高チェック（銀行以外）
     if (!fromBank && myPlayer && myPlayer.money < amount * selectedReceivers.length) {
-      alert("残高が不足しています");
+      showToast("残高が不足しています", "error");
       return;
     }
 
@@ -151,7 +165,7 @@ const PlayScreen = () => {
       setAmount(0);
       setFromBank(false);
     } catch (e) {
-      alert(e instanceof Error ? e.message : "送金に失敗しました");
+      showToast(e instanceof Error ? e.message : "送金に失敗しました", "error");
     } finally {
       setIsSending(false);
     }
@@ -172,7 +186,7 @@ const PlayScreen = () => {
         throw new Error("ゲーム終了に失敗しました");
       }
     } catch {
-      alert("ゲーム終了に失敗しました");
+      showToast("ゲーム終了に失敗しました", "error");
     }
   };
 
