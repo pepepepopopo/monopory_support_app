@@ -4,6 +4,7 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { routes } from "./routes";
 import { initializePushNotifications } from "./services/pushNotifications";
+import { ToastProvider } from "./hooks/useToast";
 import "./index.css";
 
 // プッシュ通知の初期化（ネイティブアプリのみ）
@@ -15,6 +16,8 @@ const root = document.getElementById("root") as HTMLElement;
 
 ReactDOM.createRoot(root).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ToastProvider>
+      <RouterProvider router={router} />
+    </ToastProvider>
   </StrictMode>
 );

@@ -5,6 +5,7 @@ import QrCodeModal from "../../../components/Modal/QrCodeModal";
 import { getGameConsumer } from "../../../utils/actionCable";
 import usePlayerCleanup from "../../../hooks/usePlayerCleanup";
 import { getToken, getTokenPayload, getAuthHeaders } from "../../../utils/auth";
+import { useToast } from "../../../hooks/useToast";
 import type { GameEvent, Player } from "../../../types/game"
 import type { Subscription } from "@rails/actioncable";
 import type { Consumer } from "@rails/actioncable";
@@ -19,6 +20,9 @@ const StartSettingGame = () => {
   const consumerRef = useRef<Consumer | null>(null);
   const navigate = useNavigate();
   const { cleanupPlayer } = usePlayerCleanup();
+  const { showToast } = useToast();
+  const showToastRef = useRef(showToast);
+  showToastRef.current = showToast;
 
   useEffect(()=> {
     const payload = getTokenPayload();
@@ -88,7 +92,7 @@ const StartSettingGame = () => {
             navigate(`/games/${joinToken}/play`, { replace: true });
           } else if(data.type === "GAME_DELETED"){
             if (!isLeavingRef.current) {
-              alert(data.message || "ゲームが終了しました");
+              showToastRef.current(data.message || "ゲームが終了しました", "info");
               navigate("/games");
             }
           }
@@ -106,7 +110,7 @@ const StartSettingGame = () => {
 
   const handleStartGame = async() =>{
     if (!isHost) {
-      alert("ホストのみがゲームを開始できます");
+      showToast("ホストのみがゲームを開始できます", "error");
       return;
     }
 
@@ -126,7 +130,7 @@ const StartSettingGame = () => {
 
       navigate(`/games/${joinToken}/play`);
     } catch {
-      alert("ゲームの開始に失敗しました");
+      showToast("ゲームの開始に失敗しました", "error");
     }
   }
 

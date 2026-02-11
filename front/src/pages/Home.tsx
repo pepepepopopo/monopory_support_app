@@ -17,6 +17,32 @@ function Home() {
         </div>
       </section>
 
+      {/* Pain Points Section */}
+      <section className="py-10 px-4">
+        <h2 className="text-2xl font-bold text-center mb-6">こんなお悩みありませんか？</h2>
+        <div className="max-w-lg mx-auto space-y-3">
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body p-4">
+              <h3 className="font-bold">モノポリーの銀行役が面倒...</h3>
+              <p className="text-sm opacity-70">計算ミスや両替の手間で、ゲームが止まってしまう。銀行役だけゲームを楽しめない。</p>
+            </div>
+          </div>
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body p-4">
+              <h3 className="font-bold">人生ゲームでお金が足りない...</h3>
+              <p className="text-sm opacity-70">紙幣の枚数が足りなくなったり、細かい金額のやり取りが大変。メモで管理するのも面倒。</p>
+            </div>
+          </div>
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body p-4">
+              <h3 className="font-bold">ボードゲームの現金管理を効率化したい</h3>
+              <p className="text-sm opacity-70">紙幣の準備・片付けの手間を省いて、ゲームそのものをもっと楽しみたい。</p>
+            </div>
+          </div>
+        </div>
+        <p className="text-center mt-6 text-lg font-semibold text-primary">マネサクがすべて解決します</p>
+      </section>
+
       {/* How It Works Section */}
       <section className="py-10 px-4 bg-base-200 rounded-xl">
         <h2 className="text-2xl font-bold text-center mb-6">使い方</h2>
@@ -60,6 +86,40 @@ function Home() {
                 <p className="text-sm opacity-70">全員揃ったらスタート！送金はタップだけ</p>
               </div>
               <div className="text-2xl">🚀</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-10 px-4">
+        <h2 className="text-2xl font-bold text-center mb-6">マネサクの特徴</h2>
+        <div className="max-w-lg mx-auto space-y-3">
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body flex-row items-center gap-3 p-4">
+              <div className="text-2xl">💰</div>
+              <div className="flex-1">
+                <h3 className="font-bold">お金が足りなくならない</h3>
+                <p className="text-sm opacity-70">デジタル管理だから紙幣の枚数制限なし。初期資金も自由に設定できます。</p>
+              </div>
+            </div>
+          </div>
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body flex-row items-center gap-3 p-4">
+              <div className="text-2xl">⚡</div>
+              <div className="flex-1">
+                <h3 className="font-bold">送金はワンタップ</h3>
+                <p className="text-sm opacity-70">面倒な計算・両替が不要。全員の残高がリアルタイムで同期されます。</p>
+              </div>
+            </div>
+          </div>
+          <div className="card bg-base-100 shadow-sm rounded-xl">
+            <div className="card-body flex-row items-center gap-3 p-4">
+              <div className="text-2xl">📚</div>
+              <div className="flex-1">
+                <h3 className="font-bold">子供のお金教育にも</h3>
+                <p className="text-sm opacity-70">正確な金額表示と送金履歴で、遊びながらお金の流れを学べます。</p>
+              </div>
             </div>
           </div>
         </div>

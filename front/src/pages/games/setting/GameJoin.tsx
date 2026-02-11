@@ -5,6 +5,7 @@ import JoinGame from "../../../services/api/games/JoinGame";
 import PlayerColor from "../../../utils/PlayerColor";
 import type { Player } from "../../../types/game";
 import { setToken } from "../../../utils/auth";
+import { useToast } from "../../../hooks/useToast";
 
 const NAME_MAX_LENGTH = 20;
 
@@ -17,6 +18,7 @@ const GameJoin = () =>{
   const [players, setPlayers] = useState<Player[]>([]);
   const hostPlayer = players.find(p => p.is_host);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!joinToken) return;
@@ -51,11 +53,11 @@ const GameJoin = () =>{
   const handleStartGame = async() => {
     if (isLoading) return;
     if (name.trim() === "") {
-      alert("プレイヤー名を入力してください");
+      showToast("プレイヤー名を入力してください", "error");
       return;
     }
     if (!joinToken) {
-      alert("ゲーム情報が取得できませんでした");
+      showToast("ゲーム情報が取得できませんでした", "error");
       return;
     }
 
@@ -69,7 +71,7 @@ const GameJoin = () =>{
       setToken(result.token);
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch(e){
-      alert(e instanceof Error ? e.message : "ゲームに参加できませんでした");
+      showToast(e instanceof Error ? e.message : "ゲームに参加できませんでした", "error");
     }finally{
       setIsLoading(false);
     }

@@ -4,6 +4,7 @@ import CreateGame from '../../../services/api/games/createGame';
 import PlayerColor from "../../../utils/PlayerColor";
 import CreatePlayer from "../../../services/api/player/createPlayer";
 import { setToken } from "../../../utils/auth";
+import { useToast } from "../../../hooks/useToast";
 
 const NAME_MAX_LENGTH = 20;
 
@@ -12,11 +13,12 @@ const NewGame = () => {
   const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
   const [ isLoading, setIsLoading ] = useState(false);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleStartGame = async() => {
     if (isLoading) return;
     if (name.trim() === "") {
-      alert("プレイヤー名を入力してください");
+      showToast("プレイヤー名を入力してください", "error");
       return;
     }
 
@@ -32,7 +34,7 @@ const NewGame = () => {
 
       navigate(`/games/${data.game.join_token}/startSetting`);
     }catch(e){
-      alert(e instanceof Error ? e.message : "ゲームの作成に失敗しました");
+      showToast(e instanceof Error ? e.message : "ゲームの作成に失敗しました", "error");
     }finally{
       setIsLoading(false);
     }
