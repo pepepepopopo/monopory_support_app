@@ -8,7 +8,9 @@ import PlayScreen from './pages/games/started/ PlayScreen.tsx';
 import ResultScreen from './pages/games/started/ResultScreen.tsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.tsx';
 import Terms from './pages/Terms.tsx';
+import About from './pages/About.tsx';
 import NotFound from './pages/NotFound.tsx';
+import Contact from './pages/Contact.tsx';
 
 export const routes = [
   {
@@ -18,6 +20,8 @@ export const routes = [
       { index: true, Component: Home },
       { path: "privacy", Component: PrivacyPolicy },
       { path: "terms", Component: Terms },
+      { path: "about", Component: About },
+      { path: "contact", Component: Contact },
       {
         path: "games",
         Component: NewGameLayout,

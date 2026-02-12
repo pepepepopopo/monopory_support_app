@@ -139,6 +139,8 @@ function Home() {
         <p>Money Saku-Saku Support</p>
         <div className="mt-2 space-x-3">
           <a href="/blog/" className="link">ブログ</a>
+          <Link to="/contact" className="Link">お問い合わせ</Link>
+          <Link to="/about" className="link">サイトについて</Link>
           <Link to="/privacy" className="link">プライバシーポリシー</Link>
           <Link to="/terms" className="link">利用規約</Link>
         </div>
