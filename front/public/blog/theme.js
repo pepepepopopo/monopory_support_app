@@ -1,0 +1,27 @@
+// DaisyUI lemonade theme を Tailwind browser CDN に登録する共通スクリプト
+// 各ブログHTMLで <script src="/blog/theme.js"></script> として読み込む
+(function () {
+  var s = document.createElement('style');
+  s.type = 'text/tailwindcss';
+  s.textContent =
+    '@theme {' +
+    '--color-primary: oklch(58.92% .199 134.6);' +
+    '--color-primary-content: oklch(11.784% .039 134.6);' +
+    '--color-secondary: oklch(77.75% .196 111.09);' +
+    '--color-secondary-content: oklch(15.55% .039 111.09);' +
+    '--color-accent: oklch(85.39% .201 100.73);' +
+    '--color-accent-content: oklch(17.078% .04 100.73);' +
+    '--color-neutral: oklch(30.98% .075 108.6);' +
+    '--color-neutral-content: oklch(86.196% .015 108.6);' +
+    '--color-info: oklch(86.19% .047 224.14);' +
+    '--color-info-content: oklch(17.238% .009 224.14);' +
+    '--color-success: oklch(86.19% .047 157.85);' +
+    '--color-warning: oklch(86.19% .047 102.15);' +
+    '--color-error: oklch(86.19% .047 25.85);' +
+    '--color-base-100: oklch(98.71% .02 123.72);' +
+    '--color-base-200: oklch(91.8% .018 123.72);' +
+    '--color-base-300: oklch(84.89% .017 123.72);' +
+    '--color-base-content: oklch(19.742% .004 123.72);' +
+    '}';
+  document.head.appendChild(s);
+})();
