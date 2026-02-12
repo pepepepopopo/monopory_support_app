@@ -2,10 +2,10 @@ import { Link } from "react-router";
 
 const PrivacyPolicy = () => {
   return (
-    <div className="py-8 px-2">
+    <div className="py-8 px-2 max-w-2xl mx-auto"> {/* 読みやすさのためmax-width推奨 */}
       <h1 className="text-2xl font-bold mb-6">プライバシーポリシー</h1>
 
-      <div className="space-y-6 text-sm leading-relaxed">
+      <div className="space-y-6 text-sm leading-relaxed text-gray-800">
         <section>
           <h2 className="text-lg font-semibold mb-2">1. はじめに</h2>
           <p>
@@ -14,77 +14,81 @@ const PrivacyPolicy = () => {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-2">2. 収集する情報</h2>
-          <p>本サービスは、以下の情報を収集する場合があります。</p>
-          <ul className="list-disc list-inside mt-2 space-y-1 ml-2">
-            <li>ゲーム内で入力されるプレイヤー名</li>
-            <li>アクセスログ（IPアドレス、ブラウザ情報、アクセス日時）</li>
-            <li>Cookie およびこれに類似する技術により収集される情報</li>
-          </ul>
-          <p className="mt-2">
-            本サービスはユーザー登録を必要としないため、メールアドレス・パスワード等の個人情報は収集しません。
+          <h2 className="text-lg font-semibold mb-2">2. 広告の配信について</h2>
+          <p>
+            本サービスでは、第三者配信の広告サービス「Google AdSense」を利用しています。
           </p>
+          <ul className="list-disc list-inside mt-2 space-y-2 ml-2">
+            <li>
+              Googleなどの第三者配信事業者は、Cookie（クッキー）を使用して、ユーザーが本サービスや他のウェブサイトに過去にアクセスした際の情報に基づいて広告を配信します。
+            </li>
+            <li>
+              Googleが広告 Cookie を使用することにより、ユーザーが本サービスや他のサイトにアクセスした際の情報に基づいて、Google やそのパートナーが適切な広告をユーザーに表示できます。
+            </li>
+            <li>
+              ユーザーは、Googleアカウントの
+              <a href="https://adssettings.google.com/authenticated" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
+                広告設定
+              </a>
+              で、パーソナライズ広告を無効にできます。または、
+              <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
+                www.aboutads.info
+              </a>
+              にアクセスすれば、パーソナライズ広告に使われる第三者配信事業者の Cookie を無効にできます。
+            </li>
+          </ul>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold mb-2">3. アクセス解析ツール</h2>
           <p>
-            本サービスでは、Googleによるアクセス解析ツール「Google
-            Analytics」を使用しています。Google
-            Analyticsはデータの収集のためにCookieを使用しています。このデータは匿名で収集されており、個人を特定するものではありません。
+            本サービスでは、Googleによるアクセス解析ツール「Google Analytics」を使用しています。Google Analyticsはデータの収集のためにCookieを使用しています。このデータは匿名で収集されており、個人を特定するものではありません。
           </p>
           <p className="mt-2">
-            この機能はCookieを無効にすることで収集を拒否できます。詳しくはお使いのブラウザの設定をご確認ください。Google
-            Analyticsの利用規約については、Google
-            Analyticsのサイトをご確認ください。
+            この機能はCookieを無効にすることで収集を拒否できます。詳しくはお使いのブラウザの設定をご確認ください。Google Analyticsの利用規約については、
+            <a href="https://marketingplatform.google.com/about/analytics/terms/jp/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
+              Google Analyticsのサイト
+            </a>
+            をご確認ください。
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-2">4. 広告配信について</h2>
-          <p>
-            本サービスでは、第三者配信の広告サービスを利用する場合があります。広告配信事業者は、ユーザーの興味に応じた広告を表示するためにCookieを使用することがあります。
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-lg font-semibold mb-2">5. 情報の利用目的</h2>
-          <p>収集した情報は、以下の目的で利用します。</p>
+          <h2 className="text-lg font-semibold mb-2">4. 収集する情報</h2>
+          <p>本サービスは、広告配信および解析の他に以下の情報を収集する場合があります。</p>
           <ul className="list-disc list-inside mt-2 space-y-1 ml-2">
-            <li>本サービスの提供・運営</li>
-            <li>サービスの改善・新機能の開発</li>
-            <li>利用状況の分析</li>
+            <li>ゲーム内で一時的に使用されるプレイヤー名</li>
+            <li>アクセスログ（IPアドレス、ブラウザ情報、アクセス日時）</li>
           </ul>
-        </section>
-
-        <section>
-          <h2 className="text-lg font-semibold mb-2">6. 第三者への提供</h2>
-          <p>
-            本サービスは、法令に基づく場合を除き、ユーザーの同意なく第三者に個人情報を提供することはありません。
+          <p className="mt-2 text-xs text-gray-500">
+            ※プレイヤー名はブラウザのローカル環境での管理を主とし、サーバー側で個人を特定する形で恒久的に保存することはありません。
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-2">7. ポリシーの変更</h2>
+          <h2 className="text-lg font-semibold mb-2">5. 免責事項</h2>
           <p>
-            本ポリシーの内容は、必要に応じて変更することがあります。変更後のプライバシーポリシーは、本ページに掲載した時点から効力を生じるものとします。
+            本サービスのコンテンツ・情報について、可能な限り正確な情報を掲載するよう努めておりますが、正確性や安全性を保証するものではありません。
+          </p>
+          <p className="mt-2">
+            本サービスを利用したことによるゲーム上のトラブル、損害、データの消失等について、運営者は一切の責任を負いかねます。また、本サービスからリンク等によって他のサイトに移動された場合、移動先サイトで提供される情報、サービス等について一切の責任を負いません。
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-2">8. お問い合わせ</h2>
+          <h2 className="text-lg font-semibold mb-2">6. お問い合わせ</h2>
           <p>
-            本ポリシーに関するお問い合わせは、本サービスの運営者までご連絡ください。
+            本ポリシーに関するお問い合わせ、および本サービスに関するご連絡は、運営者（manesaku.com お問い合わせ窓口）までお願いいたします。
           </p>
         </section>
 
-        <p className="text-xs opacity-50 mt-8">制定日: 2026年2月5日</p>
+        <p className="text-xs opacity-50 mt-8">制定日: 2026年2月5日<br />改定日: 2026年2月12日</p>
       </div>
 
       <div className="mt-10 text-center text-xs opacity-50">
-        <Link to="/" className="link">トップに戻る</Link>
+        <Link to="/" className="link underline">トップに戻る</Link>
         <span className="mx-2">|</span>
-        <Link to="/terms" className="link">利用規約</Link>
+        <Link to="/terms" className="link underline">利用規約</Link>
       </div>
     </div>
   );
