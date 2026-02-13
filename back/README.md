@@ -1,24 +1,26 @@
-# README
+# マネサク - バックエンド
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+ボードゲームのお金管理をデジタル化する Web アプリの API サーバーです。
 
-Things you may want to cover:
+## 技術スタック
 
-* Ruby version
+- Ruby on Rails 8
+- PostgreSQL
+- Puma
+- ActionCable（WebSocket によるリアルタイム通信）
+- JWT 認証
+- Kamal（デプロイ）
 
-* System dependencies
+## 主な機能
 
-* Configuration
+- ゲームの作成・参加管理
+- プレイヤー間の送金処理
+- リアルタイム残高同期（ActionCable）
+- 取引履歴の記録
 
-* Database creation
+## セットアップ
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+```bash
+bin/rails db:setup
+bin/rails server
+```

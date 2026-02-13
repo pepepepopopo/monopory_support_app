@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+# マネサク - フロントエンド
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ボードゲームのお金管理をデジタル化する Web アプリのフロントエンドです。
 
-Currently, two official plugins are available:
+## 技術スタック
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 + TypeScript
+- Vite 7
+- Tailwind CSS v4 + DaisyUI v5（lemonade テーマ）
+- React Router v7
+- ActionCable（リアルタイム通信）
+- Capacitor（iOS アプリ対応）
 
-## React Compiler
+## セットアップ
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## ブログ（静的ページ）
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+SEO 用の静的 HTML ページは `public/blog/` に配置しています。
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Tailwind ブラウザ CDN + DaisyUI CDN を使用
+- テーマ色の登録は `public/blog/theme.js` で一元管理
+- URL 構造: `/blog/board-game/{slug}/`
+
+### 記事一覧
+
+| スラッグ | タイトル |
+|---|---|
+| banker-tips | モノポリーの銀行役が面倒？負担をゼロにする方法 |
+| money-shortage | 人生ゲームでお金が足りない！原因と対策まとめ |
+| money-management | ボードゲームの現金管理を効率化する3つの方法 |
+| money-education | 子供のお金教育にボードゲームが効果的な理由 |
+| how-to-use | マネサクの使い方ガイド |
+| digital-banking | ボードゲームの銀行係をデジタル化するメリット5つ |
+| family-game-night | 家族のボードゲームタイムにアプリを活用する方法 |
+| calculator-tips | ボードゲーム中の計算トラブルを防ぐ方法 |
+
+## ビルド
+
+```bash
+npm run build
 ```
