@@ -35,7 +35,6 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
-  {/* 以下、各ブログ記事のURLは既存通り */}
   <url>
     <loc>https://manesaku.com/blog/board-game/banker-tips/</loc>
     <changefreq>monthly</changefreq>
@@ -53,6 +52,26 @@
   </url>
   <url>
     <loc>https://manesaku.com/blog/board-game/money-education/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://manesaku.com/blog/board-game/how-to-use/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://manesaku.com/blog/board-game/digital-banking/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://manesaku.com/blog/board-game/family-game-night/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://manesaku.com/blog/board-game/calculator-tips/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
