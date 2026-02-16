@@ -92,6 +92,13 @@ const ResultScreen = () => {
           className="btn btn-block btn-primary"
           onClick={handleBackToTop}
         >
+          新しいゲームを始める
+        </button>
+        <button
+          type="button"
+          className="btn btn-block btn-ghost btn-sm opacity-60"
+          onClick={handleBackToTop}
+        >
           トップに戻る
         </button>
       </div>

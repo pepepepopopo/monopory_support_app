@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja" data-theme="lemonade">
+  <head>
+{{headCommon}}
+    <title>ブログ｜マネサク - ボードゲームの銀行役・現金管理をもっと楽しく</title>
+    <meta name="description" content="モノポリーや人生ゲームの銀行役のコツ、ボードゲームの現金管理を効率化する方法、子供のお金教育に役立つ情報をお届けします。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ブログ｜マネサク" />
+    <meta property="og:description" content="ボードゲームの銀行役・現金管理のお役立ち情報をお届けします。" />
+    <meta property="og:site_name" content="マネサク" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="ブログ｜マネサク" />
+    <meta name="twitter:description" content="ボードゲームの銀行役・現金管理のお役立ち情報をお届けします。" />
+    <link rel="canonical" href="https://manesaku.com/blog/" />
+    <style>
+      .article-card {
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      }
+      .article-card:hover {
+        transform: translateY(-3px);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-base-200">
+    <div class="max-w-2xl mx-auto px-4 py-8">
+      <!-- Header -->
+      <header class="mb-8 flex items-center gap-2">
+        <a href="/" class="btn btn-ghost text-xl font-bold text-primary">マネサク</a>
+        <span class="opacity-40">/</span>
+        <span class="text-sm opacity-60">ブログ</span>
+      </header>
+
+      <!-- Hero -->
+      <div class="mb-10 rounded-xl overflow-hidden shadow-sm">
+        <div class="bg-primary text-primary-content px-6 py-4 md:px-8">
+          <h1 class="text-2xl md:text-3xl font-bold">ブログ</h1>
+        </div>
+        <div class="bg-base-100 px-6 py-5 md:px-8 border-l-4 border-primary">
+          <p class="text-sm opacity-70 leading-relaxed">ボードゲームをもっと楽しむためのお役立ち情報をお届けします。<br>銀行役のコツ、現金管理の効率化、お金教育のヒントなど。</p>
+          <div class="flex flex-wrap gap-2 mt-4">
+            <span class="badge badge-primary badge-outline">モノポリー</span>
+            <span class="badge badge-secondary badge-outline">人生ゲーム</span>
+            <span class="badge badge-accent badge-outline">ボードゲーム</span>
+            <span class="badge badge-info badge-outline">お金教育</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Article List -->
+      <div class="space-y-4">
+{{articleCards}}
+      </div>
+
+      <!-- CTA -->
+      <div class="mt-12 text-center bg-primary text-primary-content rounded-xl p-8">
+        <h2 class="text-xl font-bold mb-2">マネサクを試してみる</h2>
+        <p class="text-sm opacity-90 mb-4">インストール不要。ブラウザですぐに使えます。</p>
+        <a href="/" class="btn btn-secondary">無料で始める</a>
+      </div>
+
+      <!-- Footer -->
+      <footer class="mt-12 bg-base-100 rounded-xl shadow-sm p-6 text-center text-sm">
+        <p class="font-bold mb-4 text-primary">Money Saku-Saku Support</p>
+        <div class="flex justify-center gap-3 flex-wrap">
+          <a href="/" class="text-primary border border-primary rounded-lg px-3 py-1 no-underline font-semibold text-xs hover:bg-primary/10">トップ</a>
+          <a href="/blog/" class="text-secondary border border-secondary rounded-lg px-3 py-1 no-underline font-semibold text-xs hover:bg-secondary/10">ブログ</a>
+          <a href="/privacy" class="text-accent border border-accent rounded-lg px-3 py-1 no-underline font-semibold text-xs hover:bg-accent/10">プライバシーポリシー</a>
+          <a href="/terms" class="text-info border border-info rounded-lg px-3 py-1 no-underline font-semibold text-xs hover:bg-info/10">利用規約</a>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

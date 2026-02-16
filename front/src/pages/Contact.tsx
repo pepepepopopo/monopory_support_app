@@ -23,7 +23,11 @@ const Contact = () => {
         </div>
       </div>
 
-      <div className="mt-12 text-center text-xs opacity-50">
+      <div className="mt-10 text-center">
+        <Link to="/" className="btn btn-primary btn-sm">ゲームを始める</Link>
+      </div>
+
+      <div className="mt-6 text-center text-xs opacity-50">
         <Link to="/" className="link underline">トップへ戻る</Link>
       </div>
     </div>

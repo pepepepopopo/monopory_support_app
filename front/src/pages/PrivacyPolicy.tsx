@@ -85,7 +85,11 @@ const PrivacyPolicy = () => {
         <p className="text-xs opacity-50 mt-8">制定日: 2026年2月5日<br />改定日: 2026年2月12日</p>
       </div>
 
-      <div className="mt-10 text-center text-xs opacity-50">
+      <div className="mt-10 text-center">
+        <Link to="/" className="btn btn-primary btn-sm">ゲームを始める</Link>
+      </div>
+
+      <div className="mt-6 text-center text-xs opacity-50">
         <Link to="/" className="link underline">トップに戻る</Link>
         <span className="mx-2">|</span>
         <Link to="/terms" className="link underline">利用規約</Link>
