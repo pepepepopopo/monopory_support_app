@@ -25,5 +25,8 @@ dist-ssr
 
 .env
 
+# Blog build output
+/blog
+
 .DS_Store
 /vendor/bundle

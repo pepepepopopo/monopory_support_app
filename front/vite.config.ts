@@ -3,6 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "fs";
 import path from "path";
+import { glob } from "glob";
 
 export default defineConfig({
   plugins: [
@@ -20,7 +21,7 @@ export default defineConfig({
             } else if (!path.extname(filePath)) {
               filePath += "/index.html";
             }
-            const fullPath = path.join(__dirname, "public", filePath);
+            const fullPath = path.join(__dirname, filePath);
             if (fs.existsSync(fullPath)) {
               req.url = filePath;
             }
@@ -32,5 +33,18 @@ export default defineConfig({
   ],
   server: {
     host: true,
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        ...Object.fromEntries(
+          glob.sync("blog/**/index.html", { cwd: __dirname }).map((f) => [
+            f.replace(/\/index\.html$/, "").replace(/\//g, "_"),
+            path.resolve(__dirname, f),
+          ])
+        ),
+      },
+    },
   },
 });

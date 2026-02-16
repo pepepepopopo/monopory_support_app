@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Outlet, ScrollRestoration } from "react-router";
 import { useEffect } from 'react'
 import '../styles/App.css'
 
@@ -8,6 +8,7 @@ function HomeLayout() {
   },[])
   return (
     <div className="size-full">
+      <ScrollRestoration />
       <div className="min-h-screen bg-base-100 p-6">
         <div className="max-w-md mx-auto">
           <Outlet />

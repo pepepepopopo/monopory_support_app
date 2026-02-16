@@ -74,7 +74,14 @@ const About = () => {
         </section>
       </div>
 
-      <div className="mt-12 text-center text-xs opacity-50">
+      {/* CTA */}
+      <div className="mt-10 text-center bg-primary text-primary-content rounded-xl p-8">
+        <h2 className="text-xl font-bold mb-2">マネサクを試してみる</h2>
+        <p className="text-sm opacity-90 mb-4">インストール不要。ブラウザですぐに使えます。</p>
+        <Link to="/" className="btn btn-secondary">無料で始める</Link>
+      </div>
+
+      <div className="mt-8 text-center text-xs opacity-50">
         <Link to="/" className="link underline">トップへ戻る</Link>
       </div>
     </div>
