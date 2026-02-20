@@ -1,0 +1,247 @@
+---
+title: モノポリーのルールをわかりやすく解説｜初心者でもすぐ遊べる
+description: モノポリーの基本ルールを初心者向けにわかりやすく解説。ゲームの準備から勝利条件、物件の売買、家・ホテルの建て方、交渉のコツまで、これを読めばすぐに遊べます。
+keywords: モノポリー,ルール,わかりやすく,初心者,遊び方,基本,ボードゲーム
+slug: monopoly-rules
+date: 2026-02-15
+displayDate: 2026.02.15
+badge: モノポリー
+badgeColor: primary
+readingTime: 6分で読める
+h1: モノポリーのルールを<br class="hidden md:inline">わかりやすく解説
+ctaTitle: お金管理はアプリにおまかせ
+ctaDescription: 紙幣の配布・計算・両替ぜんぶ不要。ブラウザですぐ使えます。
+emoji: 🎲
+excerpt: ゲームの準備から勝利条件まで。初心者でもこれを読めばすぐにモノポリーを遊べます。
+---
+<style>
+  .rule-step { border-left: 4px solid var(--color-primary); transition: transform 0.15s; }
+  .rule-step:nth-child(even) { border-left-color: var(--color-secondary); }
+  .rule-step:hover { transform: translateY(-1px); }
+  .highlight-box { background: color-mix(in oklch, var(--color-primary) 5%, transparent); border: 1px solid color-mix(in oklch, var(--color-primary) 15%, transparent); border-radius: 0.75rem; padding: 1.25rem; }
+</style>
+
+        <!-- TOC -->
+        <nav class="toc bg-base-200 rounded-lg rounded-l-none p-4 pl-5 mb-8">
+          <p class="text-sm font-bold mb-2 text-primary">目次</p>
+          <ul class="text-sm space-y-1.5">
+            <li><a href="#overview" class="no-underline">モノポリーってどんなゲーム？</a></li>
+            <li><a href="#setup" class="no-underline">ゲームの準備</a></li>
+            <li><a href="#turn" class="no-underline">ターンの流れ</a></li>
+            <li><a href="#property" class="no-underline">物件の購入と家賃</a></li>
+            <li><a href="#building" class="no-underline">家とホテルの建て方</a></li>
+            <li><a href="#special" class="no-underline">特殊マスのルール</a></li>
+            <li><a href="#trade" class="no-underline">交渉と取引</a></li>
+            <li><a href="#bankruptcy" class="no-underline">破産と勝利条件</a></li>
+            <li><a href="#tips" class="no-underline">初心者がつまずきやすいポイント</a></li>
+          </ul>
+        </nav>
+
+        <div class="blog-content">
+          <p>モノポリーは1935年に誕生した世界的ベストセラーのボードゲームです。不動産を売買し、他のプレイヤーから家賃を集めて資産を増やし、最後まで生き残った人が勝ち。</p>
+          <p>ルールが多そうに見えますが、<strong>基本の流れはシンプル</strong>です。この記事では初心者でもすぐ遊べるように、ルールをわかりやすく解説します。</p>
+
+          <h2 id="overview">モノポリーってどんなゲーム？</h2>
+          <p>モノポリーは<strong>不動産の売買で資産を増やすボードゲーム</strong>です。サイコロを振ってボード上を進み、止まったマスの土地を購入。他のプレイヤーが自分の土地に止まったら家賃をもらえます。</p>
+          <p>家やホテルを建てると家賃がどんどん上がり、最終的に<strong>他のプレイヤーを全員破産させた人が勝ち</strong>です。</p>
+
+          <h2 id="setup">ゲームの準備</h2>
+
+          <h3>プレイ人数と所要時間</h3>
+          <ul>
+            <li><strong>プレイ人数</strong>: 2〜6人（4〜5人がベスト）</li>
+            <li><strong>所要時間</strong>: 60〜180分（短縮ルールもあり）</li>
+          </ul>
+
+          <h3>初期資金の配布</h3>
+          <p>各プレイヤーに<strong>合計$1,500</strong>を以下の内訳で配ります。</p>
+        </div>
+
+        <!-- 初期資金テーブル -->
+        <div class="overflow-x-auto my-6">
+          <table class="table table-zebra w-full text-sm">
+            <thead>
+              <tr class="bg-primary text-primary-content">
+                <th class="font-bold">紙幣</th>
+                <th class="font-bold text-center">枚数</th>
+                <th class="font-bold text-center">小計</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>$500</td><td class="text-center">2枚</td><td class="text-center">$1,000</td></tr>
+              <tr><td>$100</td><td class="text-center">2枚</td><td class="text-center">$200</td></tr>
+              <tr><td>$50</td><td class="text-center">1枚</td><td class="text-center">$50</td></tr>
+              <tr><td>$20</td><td class="text-center">1枚</td><td class="text-center">$20</td></tr>
+              <tr><td>$10</td><td class="text-center">1枚</td><td class="text-center">$10</td></tr>
+              <tr><td>$5</td><td class="text-center">1枚</td><td class="text-center">$5</td></tr>
+              <tr><td>$1</td><td class="text-center">5枚</td><td class="text-center">$5</td></tr>
+              <tr class="font-bold"><td>合計</td><td class="text-center">13枚</td><td class="text-center font-bold" style="color: var(--color-primary)">$1,500</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="blog-content">
+          <h3>その他の準備</h3>
+          <ul>
+            <li>チャンスカードとコミュニティチェストカードをそれぞれシャッフルして所定の場所に置く</li>
+            <li>各プレイヤーがコマを選び、「GO」マスに置く</li>
+            <li>銀行係を1人決める（残りの紙幣・物件カード・家・ホテルを管理）</li>
+          </ul>
+
+          <!-- 記事途中CTA -->
+          <div class="not-prose my-8 flex flex-col sm:flex-row items-center gap-3 bg-base-200 rounded-lg p-4">
+            <p class="text-sm font-bold flex-1">紙幣の配布、計算、両替。面倒な銀行係をアプリに任せませんか？</p>
+            <a href="/" class="btn btn-primary btn-sm whitespace-nowrap">マネサクを始める</a>
+          </div>
+
+          <h2 id="turn">ターンの流れ</h2>
+          <p>モノポリーの1ターンは、以下の流れで進みます。</p>
+          <ol>
+            <li><strong>サイコロを2個振る</strong> — 出た目の合計だけコマを進める</li>
+            <li><strong>止まったマスのアクション</strong> — 土地なら購入or家賃支払い、カードマスならカードを引くなど</li>
+            <li><strong>建設や交渉</strong>（任意） — 家を建てたり、他プレイヤーと取引できる</li>
+            <li><strong>次のプレイヤーへ</strong></li>
+          </ol>
+
+          <h3>ゾロ目のルール</h3>
+          <p>サイコロの目がゾロ目（同じ数字）なら、<strong>もう一度サイコロを振れます</strong>。ただし、3回連続でゾロ目が出たら刑務所行きです。</p>
+
+          <h2 id="property">物件の購入と家賃</h2>
+
+          <h3>物件を買う</h3>
+          <p>誰も所有していない土地に止まったら、<strong>表示価格で購入できます</strong>。購入すると物件カード（権利書）を受け取ります。</p>
+          <p>購入しない場合、その物件は<strong>オークション</strong>にかけられます。全プレイヤーが入札でき、最高額の人が購入します（意外と忘れられがちなルールです）。</p>
+
+          <h3>家賃を受け取る</h3>
+          <p>他のプレイヤーが自分の土地に止まったら、<strong>物件カードに書かれた家賃</strong>を請求できます。ただし、物件が抵当に入っている場合は家賃を受け取れません。</p>
+
+          <h3>カラーグループを揃える</h3>
+          <p>同じ色の物件を<strong>すべて揃える（独占する）</strong>と、家が建てられるようになります。さらに、家を建てていなくても<strong>家賃が2倍</strong>になります。これがモノポリーの最重要ポイントです。</p>
+
+          <h2 id="building">家とホテルの建て方</h2>
+
+          <h3>建設のルール</h3>
+          <ul>
+            <li><strong>カラーグループを独占</strong>していないと建てられない</li>
+            <li>家は1軒ずつ、<strong>同じグループ内で均等に</strong>建てる必要がある（1つの土地だけに集中して建てられない）</li>
+            <li>1つの土地に<strong>最大4軒の家</strong>を建てられる</li>
+            <li>家を4軒建てた土地に<strong>ホテル</strong>（家4軒と交換）を建てられる</li>
+          </ul>
+
+          <h3>建設費</h3>
+          <p>建設費は物件カードに記載されています。安い物件は$50/軒、高い物件は$200/軒です。家を建てると<strong>家賃が数倍〜十数倍</strong>に跳ね上がります。</p>
+
+          <h2 id="special">特殊マスのルール</h2>
+        </div>
+
+        <!-- 特殊マスカード -->
+        <div class="space-y-3 my-6">
+          <div class="rule-step bg-base-100 rounded-lg p-4 shadow-sm">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl mt-0.5">🔄</span>
+              <div>
+                <p class="font-bold text-sm" style="color: var(--color-primary)">GO（スタート）</p>
+                <p class="text-xs opacity-70 mt-1">GOマスを通過するたびに銀行から<strong>$200</strong>を受け取ります。ちょうど止まっても$200です（$400もらえるのは非公式ルール）。</p>
+              </div>
+            </div>
+          </div>
+          <div class="rule-step bg-base-100 rounded-lg p-4 shadow-sm">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl mt-0.5">🔒</span>
+              <div>
+                <p class="font-bold text-sm" style="color: var(--color-secondary)">刑務所</p>
+                <p class="text-xs opacity-70 mt-1">「刑務所へ行け」マスに止まるか、チャンスカードで指示されると刑務所行き。出る方法は3つ: (1) $50を払う (2) 「刑務所から出るカード」を使う (3) 次の3ターンでゾロ目を出す。</p>
+              </div>
+            </div>
+          </div>
+          <div class="rule-step bg-base-100 rounded-lg p-4 shadow-sm">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl mt-0.5">💰</span>
+              <div>
+                <p class="font-bold text-sm" style="color: var(--color-primary)">税金マス</p>
+                <p class="text-xs opacity-70 mt-1">「所得税」は$200を銀行に支払い。「物品税」は$100を銀行に支払い。</p>
+              </div>
+            </div>
+          </div>
+          <div class="rule-step bg-base-100 rounded-lg p-4 shadow-sm">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl mt-0.5">🚂</span>
+              <div>
+                <p class="font-bold text-sm" style="color: var(--color-secondary)">鉄道・電力会社・水道会社</p>
+                <p class="text-xs opacity-70 mt-1">鉄道は所有数で家賃が変動（1つ$25、2つ$50、3つ$100、4つ$200）。電力・水道はサイコロの出目×4（1つ所有時）or ×10（2つ所有時）。</p>
+              </div>
+            </div>
+          </div>
+          <div class="rule-step bg-base-100 rounded-lg p-4 shadow-sm">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl mt-0.5">❓</span>
+              <div>
+                <p class="font-bold text-sm" style="color: var(--color-primary)">チャンス / コミュニティチェスト</p>
+                <p class="text-xs opacity-70 mt-1">カードを1枚引いて指示に従います。お金をもらえることも、払わされることも。「刑務所へ行け」や「GOに進む」など移動の指示もあります。</p>
+              </div>
+            </div>
+          </div>
+          <div class="rule-step bg-base-100 rounded-lg p-4 shadow-sm">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl mt-0.5">🅿️</span>
+              <div>
+                <p class="font-bold text-sm" style="color: var(--color-secondary)">無料駐車場</p>
+                <p class="text-xs opacity-70 mt-1">公式ルールでは何も起きません。「税金がたまって受け取れる」というのはローカルルールです。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="blog-content">
+          <h2 id="trade">交渉と取引</h2>
+          <p>モノポリーで最も重要なのが<strong>プレイヤー間の交渉</strong>です。自分のターン中であれば、いつでも他のプレイヤーと物件やお金の取引ができます。</p>
+
+          <h3>交渉でできること</h3>
+          <ul>
+            <li>物件の売買（プレイヤー同士で価格を自由に決められる）</li>
+            <li>物件の交換（お金を上乗せすることも可能）</li>
+            <li>「刑務所から出るカード」の売買</li>
+          </ul>
+
+          <p>カラーグループを揃えるために、<strong>他のプレイヤーから物件を買う交渉</strong>が鍵になります。「この物件を売ってくれたら$300上乗せするよ」といった駆け引きがモノポリーの醍醐味です。</p>
+
+          <!-- 記事途中CTA -->
+          <div class="not-prose my-8 flex flex-col sm:flex-row items-center gap-3 bg-base-200 rounded-lg p-4">
+            <p class="text-sm font-bold flex-1">交渉や戦略に集中するなら、お金管理はアプリにおまかせ。</p>
+            <a href="/" class="btn btn-primary btn-sm whitespace-nowrap">マネサクを始める</a>
+          </div>
+
+          <h2 id="bankruptcy">破産と勝利条件</h2>
+
+          <h3>破産するとき</h3>
+          <p>家賃や税金を払えなくなったら、まず以下の方法でお金を作ります。</p>
+          <ol>
+            <li><strong>家・ホテルを売る</strong>（購入価格の半額で銀行に売却）</li>
+            <li><strong>物件を抵当に入れる</strong>（物件カード裏面の金額を銀行から受け取る。家賃は受け取れなくなる）</li>
+            <li><strong>他プレイヤーに物件を売る</strong></li>
+          </ol>
+          <p>それでも払えなければ<strong>破産</strong>。残りの資産はすべて債権者（家賃を請求したプレイヤーor銀行）に渡ります。</p>
+
+          <h3>勝利条件</h3>
+          <p><strong>最後まで破産せずに残ったプレイヤーの勝ち</strong>です。時間制限を設けて遊ぶ場合は、制限時間終了時に最も資産が多い（現金＋物件価格＋建物価格）プレイヤーの勝利です。</p>
+
+          <h2 id="tips">初心者がつまずきやすいポイント</h2>
+        </div>
+
+        <!-- つまずきポイント -->
+        <div class="highlight-box my-6">
+          <ul class="text-sm space-y-2 pl-4">
+            <li style="list-style-type: disc;"><strong style="color: var(--color-primary)">購入しなかった物件はオークション</strong> — 「買わない」を選んでも、他のプレイヤーが入札できます。忘れがちですが公式ルールです</li>
+            <li style="list-style-type: disc;"><strong style="color: var(--color-primary)">GOマスは$200のみ</strong> — ちょうど止まっても$400もらえるのは非公式ルール</li>
+            <li style="list-style-type: disc;"><strong style="color: var(--color-primary)">無料駐車場では何も起きない</strong> — 税金を貯めてもらえるルールはハウスルール</li>
+            <li style="list-style-type: disc;"><strong style="color: var(--color-primary)">家は均等に建てる</strong> — 1つの土地にだけ家を集中させることはできません</li>
+            <li style="list-style-type: disc;"><strong style="color: var(--color-primary)">銀行は破産しない</strong> — 銀行のお金が足りなくなったら紙に書いて代用します（公式ルール）</li>
+          </ul>
+        </div>
+
+        <!-- インラインCTA -->
+        <div class="text-center my-8 p-6 bg-base-200 rounded-xl">
+          <p class="text-sm font-bold mb-3">お金の管理はアプリにおまかせ</p>
+          <a href="/" class="btn btn-primary">マネサクを無料で始める</a>
+          <p class="text-xs opacity-50 mt-2">無料・インストール不要・ブラウザですぐ使える</p>
+        </div>

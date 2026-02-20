@@ -13,7 +13,7 @@ import type { Consumer } from "@rails/actioncable";
 const StartSettingGame = () => {
   const { joinToken } = useParams<{ joinToken: string }>();
   const [players, setPlayers] = useState<Player[]>([]);
-  const [startMoney, setStartMoney] = useState(15000);
+  const [startMoney, setStartMoney] = useState(1500);
   const [isHost, setIsHost] = useState(false);
   const isLeavingRef = useRef(false);
   const subscriptionRef = useRef<Subscription | null>(null);
