@@ -6,6 +6,7 @@ import { useToast } from "../../../hooks/useToast";
 import type { GameEvent, Player, TransactionLog } from "../../../types/game";
 import type { Consumer } from "@rails/actioncable";
 import Calculator from "../../../components/Calculator/Calculator";
+import InterestModal from "../../../components/Modal/InterestModal";
 
 type TabType = 'game' | 'history';
 
@@ -28,6 +29,9 @@ const PlayScreen = () => {
 
   // 電卓モーダル
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+
+  // 利息モーダル
+  const [isInterestOpen, setIsInterestOpen] = useState(false);
 
   const { showToast } = useToast();
   const showToastRef = useRef(showToast);
@@ -231,7 +235,22 @@ const PlayScreen = () => {
 
               {/* 送金フォーム */}
               <div className="bg-base-100 rounded-box shadow-md p-4 space-y-4">
-                <div className="font-bold text-lg">送金</div>
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-lg">送金</div>
+                  {isHost && (
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline btn-secondary gap-1"
+                      onClick={() => setIsInterestOpen(true)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      </svg>
+                      利息
+                    </button>
+                  )}
+                </div>
 
                 {/* 送金元の選択 */}
                 <fieldset className="fieldset">
@@ -455,6 +474,40 @@ const PlayScreen = () => {
         isOpen={isCalculatorOpen}
         onClose={() => setIsCalculatorOpen(false)}
         onConfirm={(value) => setAmount(value)}
+      />
+
+      {/* 利息モーダル */}
+      <InterestModal
+        isOpen={isInterestOpen}
+        onClose={() => setIsInterestOpen(false)}
+        players={players}
+        isSending={isSending}
+        onConfirm={async (receivers) => {
+          setIsSending(true);
+          try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/logs`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...getAuthHeaders(),
+              },
+              body: JSON.stringify({
+                sender_player_id: null,
+                receivers,
+              }),
+            });
+            if (!res.ok) {
+              const errorData = await res.json().catch(() => null);
+              throw new Error(errorData?.error || "利息の支払いに失敗しました");
+            }
+            setIsInterestOpen(false);
+            showToast("利息を支払いました", "success");
+          } catch (e) {
+            showToast(e instanceof Error ? e.message : "利息の支払いに失敗しました", "error");
+          } finally {
+            setIsSending(false);
+          }
+        }}
       />
     </div>
   );

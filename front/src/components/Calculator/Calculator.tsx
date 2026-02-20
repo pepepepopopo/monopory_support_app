@@ -158,14 +158,6 @@ const Calculator = ({ isOpen, onClose, onConfirm }: CalculatorProps) => {
           >
             3
           </button>
-          <button
-            type="button"
-            className="btn btn-primary row-span-2"
-            onClick={performCalculation}
-            aria-label="計算実行"
-          >
-            =
-          </button>
 
           {/* Row 5: 0 (col span 2), 決定 */}
           <button
@@ -182,6 +174,14 @@ const Calculator = ({ isOpen, onClose, onConfirm }: CalculatorProps) => {
             aria-label="決定"
           >
             決定
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary row-span-2"
+            onClick={performCalculation}
+            aria-label="計算実行"
+          >
+            =
           </button>
         </div>
 
