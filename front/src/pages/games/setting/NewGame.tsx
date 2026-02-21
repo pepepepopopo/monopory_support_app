@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import CreateGame from '../../../services/api/games/createGame';
-import PlayerColor from "../../../utils/PlayerColor";
-import CreatePlayer from "../../../services/api/player/createPlayer";
+import createGame from '../../../services/api/games/createGame';
+import playerColors from "../../../utils/playerColors";
+import createPlayer from "../../../services/api/players/createPlayer";
+import PlayerColorSelector from "../../../components/game/PlayerColorSelector";
 import { setToken } from "../../../utils/auth";
 import { useToast } from "../../../hooks/useToast";
 
@@ -10,7 +11,7 @@ const NAME_MAX_LENGTH = 20;
 
 const NewGame = () => {
   const [ name, setName ] = useState("");
-  const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
+  const [selectedColor, setSelectedColor] = useState(playerColors[0]);
   const [ isLoading, setIsLoading ] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -24,9 +25,9 @@ const NewGame = () => {
 
     setIsLoading(true);
     try{
-      const data = await CreateGame(15000);
+      const data = await createGame(15000);
       const gameId = data.game.id
-      const result = await CreatePlayer(gameId, name.trim(), selectedColor);
+      const result = await createPlayer(gameId, name.trim(), selectedColor);
 
       sessionStorage.setItem("playerId", result.player.id.toString());
       sessionStorage.setItem("isHost", "true");
@@ -70,27 +71,7 @@ const NewGame = () => {
           </fieldset>
         </div>
         <div className="space-y-2">
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">カラー選択</legend>
-            <div className="grid grid-cols-4 gap-3">
-              { PlayerColor.map(color =>{
-                const isSelected = selectedColor === color;
-                return(
-                  <button
-                    key={color}
-                    type='button'
-                    className={`w-full aspect-square rounded-lg transition-all ${
-                      isSelected
-                        ? 'ring-2 ring-offset-2 scale-110'
-                        : 'hover:scale-105 ring-2 ring-border ring-base-200'
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setSelectedColor(color)}
-                  />
-                )
-              })}
-            </div>
-          </fieldset>
+          <PlayerColorSelector selectedColor={selectedColor} onSelect={setSelectedColor} />
         </div>
         <button
           type="button"

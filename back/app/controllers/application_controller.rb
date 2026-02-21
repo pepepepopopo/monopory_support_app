@@ -13,4 +13,17 @@ class ApplicationController < ActionController::API
   def current_player
     @current_player
   end
+
+  def authorize_host!(game)
+    unless current_player&.is_host && current_player.game_id == game.id
+      render json: { error: "ホストのみが実行できます" }, status: :forbidden
+      return false
+    end
+    true
+  end
+
+  def set_game_by_token
+    token = params[:join_token] || params[:game_join_token]
+    @game = Game.find_by!(join_token: token)
+  end
 end

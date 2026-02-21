@@ -30,10 +30,13 @@ const InterestModal = ({ isOpen, onClose, players, onConfirm, isSending }: Inter
     onConfirm(receivers);
   };
 
+  const handleClose = () => {
+    setRate("");
+    onClose();
+  };
+
   const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    if (e.target === e.currentTarget) handleClose();
   };
 
   if (!isOpen) return null;
@@ -52,7 +55,7 @@ const InterestModal = ({ isOpen, onClose, players, onConfirm, isSending }: Inter
               value={rate === "" ? "" : rate}
               onChange={(e) => {
                 const v = e.target.value;
-                setRate(v === "" ? "" : Number(v));
+                setRate(v === "" ? "" : parseInt(v, 10));
               }}
               className="input input-primary w-full text-lg"
               min="0"
@@ -115,7 +118,7 @@ const InterestModal = ({ isOpen, onClose, players, onConfirm, isSending }: Inter
         <button
           type="button"
           className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="閉じる"
         >
           ✕

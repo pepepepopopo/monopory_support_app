@@ -4,8 +4,12 @@ import CopyToClipboard from "../../../components/button/CopyToClipboard";
 import QrCodeModal from "../../../components/Modal/QrCodeModal";
 import { getGameConsumer } from "../../../utils/actionCable";
 import usePlayerCleanup from "../../../hooks/usePlayerCleanup";
-import { getToken, getTokenPayload, getAuthHeaders } from "../../../utils/auth";
+import { getToken, getTokenPayload } from "../../../utils/auth";
+import fetchGame from "../../../services/api/games/fetchGame";
+import fetchPlayers from "../../../services/api/players/fetchPlayers";
+import startGame from "../../../services/api/games/startGame";
 import { useToast } from "../../../hooks/useToast";
+import PlayerList from "../../../components/game/PlayerList";
 import type { GameEvent, Player } from "../../../types/game"
 import type { Subscription } from "@rails/actioncable";
 import type { Consumer } from "@rails/actioncable";
@@ -40,22 +44,13 @@ const StartSettingGame = () => {
 
     const checkGameAndPlayers = async () => {
       try {
-        const gameResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}`);
-        if (!gameResponse.ok) {
-          sessionStorage.removeItem("playerId");
-          sessionStorage.removeItem("isHost");
-          navigate("/games", { replace: true });
-          return;
-        }
-        const gameData = await gameResponse.json();
+        const gameData = await fetchGame(joinToken);
         if (gameData.game?.status === "playing") {
           navigate(`/games/${joinToken}/play`, { replace: true });
           return;
         }
 
-        const playersResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/players`);
-        const playersData = await playersResponse.json();
-        const playersList = Array.isArray(playersData) ? playersData : [];
+        const playersList = await fetchPlayers(joinToken);
         setPlayers(playersList);
 
         const playerId = sessionStorage.getItem("playerId");
@@ -66,7 +61,9 @@ const StartSettingGame = () => {
           return;
         }
       } catch {
-        // ignore
+        sessionStorage.removeItem("playerId");
+        sessionStorage.removeItem("isHost");
+        navigate("/games", { replace: true });
       }
     };
 
@@ -113,21 +110,10 @@ const StartSettingGame = () => {
       showToast("ホストのみがゲームを開始できます", "error");
       return;
     }
+    if (!joinToken) return;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/start`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders(),
-        },
-        body: JSON.stringify({ start_money: startMoney })
-      });
-
-      if (!response.ok) {
-        throw new Error("ゲーム開始に失敗しました");
-      }
-
+      await startGame(joinToken, startMoney);
       navigate(`/games/${joinToken}/play`);
     } catch {
       showToast("ゲームの開始に失敗しました", "error");
@@ -180,28 +166,7 @@ const StartSettingGame = () => {
               />
             </fieldset>
           )}
-          <ul className="list bg-base-100 rounded-box shadow-md">
-
-            <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">
-              プレイヤーリスト（{players.length}名）
-            </li>
-
-            {players.length === 0 ? (
-              <li className="p-4 text-center opacity-50">参加者を待っています...</li>
-            ) : (
-              players.map((player)=> (
-                <li key={player.id} className="list-row items-center">
-                  <div className="size-10 rounded-full shadow-sm" style={{ backgroundColor: player.color }} />
-                  <div className="list-col-grow">
-                    <div className="font-bold">{player.name}</div>
-                    <div className="text-xs uppercase font-semibold opacity-60">
-                      {player.is_host ? "👑 ホスト" : "プレイヤー"}
-                    </div>
-                  </div>
-                </li>
-              ))
-            )}
-          </ul>
+          <PlayerList players={players} />
         </div>
         {isHost ? (
           <button
