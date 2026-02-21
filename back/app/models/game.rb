@@ -10,6 +10,7 @@ class Game < ApplicationRecord
   before_validation :generate_join_token
 
   validates :join_token, uniqueness: true, presence: true
+  validates :start_money, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
 
   private
 

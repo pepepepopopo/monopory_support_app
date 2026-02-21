@@ -59,9 +59,9 @@ class Api::PlayersController < ApplicationController
       })
 
       if game.destroy
-        render json: { status: 200, message: "ゲームを削除しました" }
+        render json: { message: "ゲームを削除しました" }
       else
-        render json: { status: 500, message: "ゲーム削除に失敗しました" }
+        render json: { error: "ゲーム削除に失敗しました" }, status: :unprocessable_entity
       end
     else
       if player.destroy
@@ -69,9 +69,9 @@ class Api::PlayersController < ApplicationController
           type: "PLAYER_REMOVED",
           all_players: game.players.as_json
         })
-        render json: { status: 200, message: "プレイヤーを削除しました" }
+        render json: { message: "プレイヤーを削除しました" }
       else
-        render json: { status: 500, message: "プレイヤー削除に失敗しました" }
+        render json: { error: "プレイヤー削除に失敗しました" }, status: :unprocessable_entity
       end
     end
   end

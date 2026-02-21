@@ -1,6 +1,6 @@
 import { useState,useRef } from "react";
 import { useNavigate } from "react-router";
-import JoinGame from "../../services/api/games/JoinGame";
+import joinGame from "../../services/api/games/joinGame";
 
 const JoinGameModal = () => {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -9,7 +9,7 @@ const JoinGameModal = () => {
   const handleJoinGame = async(e: React.MouseEvent<HTMLButtonElement>) =>{
     e.preventDefault();
     const trimmedJoinToken = inputJoinToken.trim();
-    const data = await JoinGame(trimmedJoinToken)
+    const data = await joinGame(trimmedJoinToken)
     if(data?.game?.join_token){
       navigate(`/games/${data.game.join_token}/join`);
     }

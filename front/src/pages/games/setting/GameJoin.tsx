@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import CreatePlayer from "../../../services/api/player/createPlayer";
-import JoinGame from "../../../services/api/games/JoinGame";
-import PlayerColor from "../../../utils/PlayerColor";
+import createPlayer from "../../../services/api/players/createPlayer";
+import joinGame from "../../../services/api/games/joinGame";
+import fetchGame from "../../../services/api/games/fetchGame";
+import fetchPlayers from "../../../services/api/players/fetchPlayers";
+import playerColors from "../../../utils/playerColors";
+import PlayerColorSelector from "../../../components/game/PlayerColorSelector";
 import type { Player } from "../../../types/game";
 import { setToken } from "../../../utils/auth";
 import { useToast } from "../../../hooks/useToast";
@@ -11,7 +14,7 @@ const NAME_MAX_LENGTH = 20;
 
 const GameJoin = () =>{
   const [ name, setName ] = useState("");
-  const [selectedColor, setSelectedColor] = useState(PlayerColor[0]);
+  const [selectedColor, setSelectedColor] = useState(playerColors[0]);
   const [ isLoading, setIsLoading ] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const { joinToken } = useParams<{ joinToken: string }>();
@@ -26,8 +29,7 @@ const GameJoin = () =>{
     // ゲームのステータスを確認
     const checkGameStatus = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}`);
-        const data = await response.json();
+        const data = await fetchGame(joinToken);
         if (data.game?.status !== "waiting") {
           setGameStarted(true);
         }
@@ -38,9 +40,8 @@ const GameJoin = () =>{
 
     const fetchInitialPlayers = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}games/${joinToken}/players`);
-        const data = await response.json();
-        setPlayers(Array.isArray(data) ? data : []);
+        const data = await fetchPlayers(joinToken);
+        setPlayers(data);
       } catch {
         // ignore
       }
@@ -63,9 +64,9 @@ const GameJoin = () =>{
 
     setIsLoading(true);
     try{
-      const data = await JoinGame(joinToken);
+      const data = await joinGame(joinToken);
       const gameId = data.game.id
-      const result = await CreatePlayer(gameId, name.trim(), selectedColor);
+      const result = await createPlayer(gameId, name.trim(), selectedColor);
       sessionStorage.setItem("playerId", result.player.id.toString());
       sessionStorage.setItem("isHost", result.player.is_host ? "true" : "false");
       setToken(result.token);
@@ -124,27 +125,7 @@ const GameJoin = () =>{
           </fieldset>
         </div>
         <div className="space-y-2">
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">カラー選択</legend>
-            <div className="grid grid-cols-4 gap-3">
-              { PlayerColor.map(color =>{
-                const isSelected = selectedColor === color;
-                return(
-                  <button
-                    key={color}
-                    type='button'
-                    className={`w-full aspect-square rounded-lg transition-all ${
-                      isSelected
-                        ? 'ring-2 ring-offset-2 scale-110'
-                        : 'hover:scale-105 ring-2 ring-border ring-base-200'
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setSelectedColor(color)}
-                  />
-                )
-              })}
-            </div>
-          </fieldset>
+          <PlayerColorSelector selectedColor={selectedColor} onSelect={setSelectedColor} />
         </div>
         <button
           type="button"
