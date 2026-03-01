@@ -12,9 +12,9 @@
 
 | 区分 | 使用技術 | 役割 |
 |------|----------|------|
-| **フロントエンド** | Vite + React + TypeScript + TailwindCSS + DaisyUI | UI・操作画面 |
-| **モバイルアプリ** | Capacitor (WebViewラッパー) | iOS ネイティブアプリ（Live Update方式） |
-| **バックエンド** | Ruby on Rails 8.0.2 (API mode) | API・状態管理 |
+| **フロントエンド** | Vite 7 + React 19 + TypeScript 5.9 + Tailwind CSS v4 + DaisyUI v5 | UI・操作画面 |
+| **モバイルアプリ** | Capacitor 8 (WebViewラッパー) | iOS ネイティブアプリ（Live Update方式） |
+| **バックエンド** | Ruby on Rails ~8.0.2 (API mode) | API・状態管理 |
 | **リアルタイム通信** | Rails ActionCable (`async` アダプタ) | 双方向通信（WebSocket） |
 | **データベース** | PostgreSQL | ゲーム・プレイヤー・履歴の永続化 |
 | **環境** | Docker (開発: `compose.yaml`) / Render (本番) | 開発環境の統一・本番デプロイ |
@@ -62,7 +62,7 @@ monopory_support_app/
 │       │   └── useToast.tsx          # トースト通知（Context + Provider + Hook）
 │       ├── services/
 │       │   ├── pushNotifications.ts # プッシュ通知（ネイティブアプリ専用）
-│       │   └── api/                # createGame / JoinGame / createPlayer
+│       │   └── api/                # createGame / joinGame / createPlayer / deletePlayer
 │       ├── types/game.ts           # Player, GameEvent, TransactionLog型定義
 │       └── utils/
 │           ├── actionCable.ts      # ActionCable接続（トークン付きファクトリ関数）
@@ -162,7 +162,7 @@ WebSocket → wss://example.com/cable?token=<JWT>
 - ホスト操作（start/finish/destroy）: `current_player.is_host && current_player.game_id == game.id`
 - プレイヤー送金: `sender_player_id == current_player.id`
 - 銀行送金: `current_player.is_host` のみ
-- プレイヤー削除: 本人 or ホスト
+- プレイヤー削除: 本人 or ホスト ※同一ゲーム検証なし（IDOR、セキュリティ未対応項目参照）
 
 ---
 
@@ -226,6 +226,12 @@ WebSocket → wss://example.com/cable?token=<JWT>
 - `useToast()` Hook: `showToast(message, type?, duration?)` — type: `success` | `error` | `info`
 - 送金/受金時リアルタイム通知（ActionCable `MONEY_TRANSFERRED` イベント連動）
 - 全 `alert()` 呼び出しを `showToast()` に置き換え済み（PlayScreen, StartSettingGame, NewGame, GameJoin）
+
+### Phase 7.6: プレイヤーキック（完了）
+- ホストのみ、ロビー画面（StartSettingGame）でキック可能
+- `DELETE /api/players/:id`（JWT認証、既存エンドポイント）を利用
+- キックされたプレイヤーは `PLAYER_REMOVED` イベントで検知 → トースト表示 → `/games` へリダイレクト
+- `PlayerList` コンポーネントに `onKick` プロップを追加（ホストのみ渡す）
 
 ---
 
@@ -305,6 +311,7 @@ npx cap sync ios && npx cap open ios
 | 優先度 | 項目 | 備考 |
 |--------|------|------|
 | HIGH | CSRF保護なし | Rails APIモードで `protect_from_forgery` 無効 |
+| HIGH | プレイヤー削除IDOR | `players#destroy` が `current_player.is_host` のみ確認し同一ゲーム検証なし → 他ゲームのプレイヤーをキック可能。修正: `current_player.game_id == player.game_id` の追加 |
 | MEDIUM | リクエストサイズ制限なし | `receivers` 配列に大量データ送信可能 |
 | MEDIUM | ページネーションなし | `Game.all` で全件返却 |
 | MEDIUM | `database.yml` にパスワード平文 | 開発用だが `password: password` |
@@ -315,8 +322,8 @@ npx cap sync ios && npx cap open ios
 
 ### 優先度: 高
 - ~~**トースト通知**~~: ✅ 実装済み（Phase 7.5）
+- ~~**プレイヤーキック**~~: ✅ 実装済み（Phase 7.6）
 - **ルーレット**: プレイヤー順決め、カスタム項目、アニメーション
-- **プレイヤーキック**: ホストのみ、ロビーでの除外機能
 - **ブラウザバック防止**: `beforeunload` イベント
 
 ### 優先度: 中
@@ -384,6 +391,7 @@ Web版 → 課金UI非表示（広告のみ）
 
 ### Phase 7.5: 機能拡張 🔧 進行中
 - トースト通知 ✅
+- プレイヤーキック ✅
 - ルーレット等（Web更新で即時反映）⏳
 
 ---
@@ -420,4 +428,4 @@ docker-compose exec web rails db:migrate
 
 ---
 
-**最終更新**: 2026-02-10
+**最終更新**: 2026-03-02
