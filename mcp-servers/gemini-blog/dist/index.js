@@ -66,7 +66,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             .replace("{{TOPIC}}", topic)
             .replace("{{EXISTING_ARTICLES}}", existingArticles);
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
+            model: "gemini-2.0-flash",
             tools: [{ googleSearch: {} }],
         });
         const result = await model.generateContent(prompt);
