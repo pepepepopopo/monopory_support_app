@@ -4,9 +4,10 @@ interface Props {
   players: Player[];
   myPlayerId?: number;
   showMoney?: boolean;
+  onKick?: (player: Player) => void;
 }
 
-const PlayerList = ({ players, myPlayerId, showMoney = false }: Props) => (
+const PlayerList = ({ players, myPlayerId, showMoney = false, onKick }: Props) => (
   <ul className="list bg-base-100 rounded-box shadow-md">
     <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">
       プレイヤー一覧{!showMoney && `（${players.length}名）`}
@@ -30,6 +31,14 @@ const PlayerList = ({ players, myPlayerId, showMoney = false }: Props) => (
             <div className="font-mono font-bold">
               ${player.money.toLocaleString()}
             </div>
+          )}
+          {onKick && !player.is_host && player.id !== myPlayerId && (
+            <button
+              className="btn btn-xs btn-error btn-outline"
+              onClick={() => onKick(player)}
+            >
+              キック
+            </button>
           )}
         </li>
       ))
