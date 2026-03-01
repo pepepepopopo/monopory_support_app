@@ -8,6 +8,7 @@ import { getToken, getTokenPayload } from "../../../utils/auth";
 import fetchGame from "../../../services/api/games/fetchGame";
 import fetchPlayers from "../../../services/api/players/fetchPlayers";
 import startGame from "../../../services/api/games/startGame";
+import deletePlayer from "../../../services/api/players/deletePlayer";
 import { useToast } from "../../../hooks/useToast";
 import PlayerList from "../../../components/game/PlayerList";
 import type { GameEvent, Player } from "../../../types/game"
@@ -19,6 +20,7 @@ const StartSettingGame = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [startMoney, setStartMoney] = useState(1500);
   const [isHost, setIsHost] = useState(false);
+  const [myPlayerId, setMyPlayerId] = useState<number | undefined>(undefined);
   const isLeavingRef = useRef(false);
   const subscriptionRef = useRef<Subscription | null>(null);
   const consumerRef = useRef<Consumer | null>(null);
@@ -32,6 +34,7 @@ const StartSettingGame = () => {
     const payload = getTokenPayload();
     if (payload) {
       setIsHost(payload.is_host);
+      setMyPlayerId(payload.player_id);
     }
 
     if (!joinToken) return;
@@ -84,6 +87,14 @@ const StartSettingGame = () => {
           if(data.type === "PLAYER_ADDED" ){
             setPlayers(data.all_players);
           } else if(data.type === "PLAYER_REMOVED"){
+            const currentPlayerId = Number(sessionStorage.getItem("playerId"));
+            if (currentPlayerId && !data.all_players.some((p: Player) => p.id === currentPlayerId)) {
+              sessionStorage.removeItem("playerId");
+              sessionStorage.removeItem("isHost");
+              showToastRef.current("ホストによりキックされました", "info");
+              navigate("/games");
+              return;
+            }
             setPlayers(data.all_players);
           } else if(data.type === "GAME_STARTED"){
             navigate(`/games/${joinToken}/play`, { replace: true });
@@ -119,6 +130,15 @@ const StartSettingGame = () => {
       showToast("ゲームの開始に失敗しました", "error");
     }
   }
+
+  const handleKick = async (player: Player) => {
+    if (!window.confirm(`「${player.name}」をキックしますか？`)) return;
+    try {
+      await deletePlayer(player.id);
+    } catch {
+      showToast("キックに失敗しました", "error");
+    }
+  };
 
   const handleBack = async() => {
     isLeavingRef.current = true;
@@ -166,7 +186,11 @@ const StartSettingGame = () => {
               />
             </fieldset>
           )}
-          <PlayerList players={players} />
+          <PlayerList
+            players={players}
+            myPlayerId={myPlayerId}
+            onKick={isHost ? handleKick : undefined}
+          />
         </div>
         {isHost ? (
           <button
