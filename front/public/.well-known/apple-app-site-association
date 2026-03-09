@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.manesaku.flutterApp"],
+        "components": [
+          { "/": "/game/join*" }
+        ]
+      }
+    ]
+  }
+}

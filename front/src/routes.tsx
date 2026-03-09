@@ -4,6 +4,7 @@ import NewGameLayout from './pages/games/setting/NewGameLayout.tsx';
 import NewGame from './pages/games/setting/NewGame.tsx';
 import StartSettingGame from './pages/games/setting/StartSettingGame.tsx';
 import GameJoin from './pages/games/setting/GameJoin.tsx';
+import GameJoinRedirect from './pages/games/GameJoinRedirect.tsx';
 import PlayScreen from './pages/games/started/ PlayScreen.tsx';
 import ResultScreen from './pages/games/started/ResultScreen.tsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.tsx';
@@ -22,6 +23,7 @@ export const routes = [
       { path: "terms", Component: Terms },
       { path: "about", Component: About },
       { path: "contact", Component: Contact },
+      { path: "game/join", Component: GameJoinRedirect },
       {
         path: "games",
         Component: NewGameLayout,
