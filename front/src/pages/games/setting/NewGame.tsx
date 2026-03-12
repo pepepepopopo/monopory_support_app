@@ -33,7 +33,7 @@ const NewGame = () => {
       sessionStorage.setItem("isHost", "true");
       setToken(result.token);
 
-      navigate(`/games/${data.game.join_token}/startSetting`);
+      navigate(`/games/${data.game.join_token}/startSetting`, { state: { fromCreation: true } });
     }catch(e){
       showToast(e instanceof Error ? e.message : "ゲームの作成に失敗しました", "error");
     }finally{

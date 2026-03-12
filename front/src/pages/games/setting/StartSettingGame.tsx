@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
+import AdBanner from "../../../components/AdBanner";
 import CopyToClipboard from "../../../components/button/CopyToClipboard";
 import QrCodeModal from "../../../components/Modal/QrCodeModal";
 import { getGameConsumer } from "../../../utils/actionCable";
@@ -15,8 +16,11 @@ import type { GameEvent, Player } from "../../../types/game"
 import type { Subscription } from "@rails/actioncable";
 import type { Consumer } from "@rails/actioncable";
 
+const shownConnectionToast = new Set<string>();
+
 const StartSettingGame = () => {
   const { joinToken } = useParams<{ joinToken: string }>();
+  const location = useLocation();
   const [players, setPlayers] = useState<Player[]>([]);
   const [startMoney, setStartMoney] = useState(1500);
   const [isHost, setIsHost] = useState(false);
@@ -43,6 +47,12 @@ const StartSettingGame = () => {
     if (!token) {
       navigate("/games", { replace: true });
       return;
+    }
+
+    const fromCreation = location.state?.fromCreation === true;
+    if (fromCreation && joinToken && !shownConnectionToast.has(joinToken)) {
+      shownConnectionToast.add(joinToken);
+      showToastRef.current("ゲームの作成には10秒ほどかかります🙇", "info", 15000);
     }
 
     const checkGameAndPlayers = async () => {
@@ -79,6 +89,9 @@ const StartSettingGame = () => {
       { channel: "GameChannel", game_id: joinToken },
       {
         connected() {
+          if (fromCreation) {
+            showToastRef.current("接続しました！", "success", 3000);
+          }
           checkGameAndPlayers();
         },
         disconnected() {},
@@ -192,6 +205,7 @@ const StartSettingGame = () => {
             onKick={isHost ? handleKick : undefined}
           />
         </div>
+        <AdBanner key={`${location.pathname}-1`} adSlot="9896582291" />
         {isHost ? (
           <button
             type="button"
@@ -202,6 +216,7 @@ const StartSettingGame = () => {
             ホストがゲームを開始するまでお待ちください
           </div>
         )}
+        <AdBanner key={`${location.pathname}-2`} adSlot="3951256517" />
       </div>
     </>
   )

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import { removeToken } from "../../../utils/auth";
 import type { Player } from "../../../types/game";
+import AdBanner from "../../../components/AdBanner";
 
 const ResultScreen = () => {
   const { joinToken } = useParams<{ joinToken: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
@@ -87,6 +89,9 @@ const ResultScreen = () => {
           ))}
         </ul>
 
+        {/* 広告: AdSenseダッシュボードで取得した data-ad-slot に置き換える */}
+        <AdBanner key={`${location.pathname}-1`} adSlot="5462513263" />
+
         <button
           type="button"
           className="btn btn-block btn-primary"
@@ -101,6 +106,7 @@ const ResultScreen = () => {
         >
           トップに戻る
         </button>
+        <AdBanner key={`${location.pathname}-2`} adSlot="9917423706" />
       </div>
     </div>
   );
