@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useLocation } from "react-router";
+import AdBanner from "../../../components/AdBanner";
 import { useToast } from "../../../hooks/useToast";
 import { useGameChannel } from "../../../hooks/useGameChannel";
 import { useTransfer } from "../../../hooks/useTransfer";
@@ -15,6 +16,7 @@ const QUICK_AMOUNTS = [1, 5, 10, 50, 100, 200, 500];
 
 const PlayScreen = () => {
   const { joinToken } = useParams<{ joinToken: string }>();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabType>('game');
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [isInterestOpen, setIsInterestOpen] = useState(false);
@@ -179,8 +181,12 @@ const PlayScreen = () => {
                 </button>
               </div>
 
+              <AdBanner key={`play-game-${location.pathname}-2`} adSlot="3567637774" />
+
               {/* プレイヤー一覧 */}
               <PlayerList players={players} myPlayerId={myPlayerId} showMoney />
+
+              <AdBanner key={`play-game-${location.pathname}-1`} adSlot="9002661812" />
 
               {/* ゲーム終了（ホストのみ） */}
               {isHost && (
@@ -190,7 +196,11 @@ const PlayScreen = () => {
               )}
             </div>
           ) : (
-            <TransactionHistory logs={logs} />
+            <>
+              <AdBanner key={`play-history-${location.pathname}-2`} adSlot="1325093178" />
+              <TransactionHistory logs={logs} />
+              <AdBanner key={`play-history-${location.pathname}-1`} adSlot="8088676604" />
+            </>
           )}
         </div>
       </div>
