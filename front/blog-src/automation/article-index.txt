@@ -24,3 +24,4 @@ monopoly-bank
 life-game-banker-guide
 banker-stress
 kids-investment-education
+board-game-rental-space
